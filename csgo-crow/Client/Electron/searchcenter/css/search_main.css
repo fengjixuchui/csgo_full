@@ -1,0 +1,148 @@
+
+    .searchBtn {
+      display: inline-block;
+      border-radius: 5px;
+      background-color: #CAE1FF;
+      border: none;
+      color: #ffffff;
+      text-align: center;
+      font-size: 28px;
+      padding: 20%;
+      width: 240px;
+      height: 150px;
+      transition: all 0.5s;
+      cursor: pointer;
+      margin: 5px;
+      box-shadow: 0 5px 20px #33a7ca;
+    }
+
+    .searchBtn span {
+      cursor: pointer;
+      display: inline-block;
+      position: relative;
+      transition: 0.5s;
+    }
+
+    .searchBtn span:after {
+      content: '»';
+      position: absolute;
+      opacity: 0;
+      top: 0;
+      right: -20px;
+      transition: 0.5s;
+    }
+
+    .searchBtn:hover span {
+      padding-right: 25px;
+      box-shadow: 0 0 40px #CAE1FF;
+    }
+
+    .searchBtn:hover span:after {
+      opacity: 1;
+      right: 0;
+    }
+
+    .friend-area {
+      position: absolute;
+      width: 100%;
+      padding-top: 20%;
+    }
+
+    .friend {
+      float: left;
+      width: 20%;
+    }
+
+    .btn-group {
+      padding-top: 22%;
+    }
+
+    .friend h4 {
+      color: #CAE1FF;
+    }
+
+    .welcome-text P {
+      color: #CAE1FF;
+    }
+
+    .widget-title {
+      text-align: center;
+      color: #ffffff;
+    }
+/*
+    #in_gaming {
+      position: fixed;
+      top: 0%;
+      left: 0%;
+      width: 100%;
+      height: 100%;
+      background-color: black;
+      z-index: 1001;
+      opacity: .70;
+    }
+
+    #in_gaming h1 {
+      position: static;
+      color: #ffffff;
+      vertical-align: middle;
+      padding: 25%;
+    }*/
+    .chat_top {
+      position: absolute;
+      margin: 0 auto;
+      background: rgba(35, 118, 177, 0.44);
+      width: 50%;
+      left: 25%;
+      color: #fff;
+      border-radius: 0 0 10px 10px;
+      text-align: center;
+      z-index: 999;
+    }
+
+    .chat_top a {
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .chat_top input {
+      display: inline-block;
+      width: 100px
+    }
+
+    #chat_box {
+      width: 570px;
+      height: 350px;
+      overflow-x: hidden;
+      overflow-y: scroll;
+      line-height: 30px;
+
+    }
+
+
+    #chat_box::-webkit-scrollbar {
+      /*display: none;*/
+      /*滚动条整体样式*/
+      width: 10px;
+      height: 1px;
+    }
+
+    #chat_box::-webkit-scrollbar-thumb {
+      /*滚动条里面小方块*/
+      border-radius: 10px;
+      background-color: skyblue;
+      background-image: -webkit-linear-gradient(45deg,
+          rgba(255, 255, 255, 0.2) 25%,
+          transparent 25%,
+          transparent 50%,
+          rgba(255, 255, 255, 0.2) 50%,
+          rgba(255, 255, 255, 0.2) 75%,
+          transparent 75%,
+          transparent);
+    }
+
+    #chat_box::-webkit-scrollbar-track {
+      /*滚动条里面轨道*/
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+      background: #ededed;
+      border-radius: 10px;
+    }

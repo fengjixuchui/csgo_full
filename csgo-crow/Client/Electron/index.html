@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js" style="overflow:hidden">
+<header style="-webkit-app-region: drag">
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登陆</title>
+  <link rel="stylesheet" type="text/css" href="./css/normalize.css" />
+  <link rel="stylesheet" type="text/css" href="./css/component.css" />
+  <script src="./js/jquery.min.js"></script>
+  <link href="./css/toastr.min.css" rel="stylesheet">
+  <script src="./js/toastr.min.js"></script>
+  <script src="./js/md5.js"></script>
+  <script>
+    var was_login = false;
+    var login_limit = 0;
+    var limited = false;
+    var msg = {
+      'msgType': 'get_login_info',
+      'name': '',
+      'password': ''
+    }
+    var ipc = require('electron').ipcRenderer;
+    exit = function () {
+      console.log('window-close');
+      ipc.send('window-close');
+    }
+    goRegister = function () {
+      window.location.href = "./register.html";
+    }
+    window.toastr = require('toastr');
+    window.$ = window.jQuery = require('jquery');
+    toastr.options = {
+      "closeButton": false,
+      "debug": false,
+      "newestOnTop": true,
+      "progressBar": true,
+      "positionClass": "toast-top-right",
+      "preventDuplicates": false,
+      "onclick": null,
+      "showDuration": "300",
+      "hideDuration": "1000",
+      "timeOut": "10000",
+      "extendedTimeOut": "1000",
+      "showEasing": "swing",
+      "hideEasing": "linear",
+      "showMethod": "fadeIn",
+      "hideMethod": "fadeOut"
+    };
+    toastr["info"]("欢迎来到" + require('electron').remote.getGlobal('sharedObject').WebSiteName);
+    toastr.options['timeOut'] = "5000";
+    $(document).ready(function () {
+      $("#Do_login").click(function () {
+        if (was_login)
+          return;
+        if ($("input[ name='logname' ]").val() == "" || $("input[ name='logpass' ]").val() == "") {
+          toastr["error"]("请检查输入信息是否完整!");
+          return;
+        }
+        if (login_limit > 3) {
+          toastr["warning"]("woops!速度太快了!休息一下");
+          if (!limited) {
+            setTimeout(function () {
+              login_limit = 0;
+              limited = true;
+            }, 3000);
+          }
+          return;
+        }
+        limited = false;
+        login_limit += 1;
+        $.ajax({
+          type: "POST",
+          url: require('electron').remote.getGlobal('sharedObject').WebsiteDomain + 'api/login/',
+          data: {
+            logname: $("input[ name='logname' ]").val(),
+            logpass: $("input[ name='logpass' ]").val()
+            //Regemail: $("input[ name='Regemail' ]").val()
+          },
+          async: false,
+          success: function (result) {
+            var data = result;
+            if (data.msgType == 'Login') {
+              if (data.success) {
+                require('electron').remote.getGlobal('sharedObject').UserName = $("input[ name='logname' ]").val();
+                require('electron').remote.getGlobal('sharedObject').UserSecKey = data.secKey;
+                toastr["success"]("登陆成功! " + $("input[ name='logname' ]").val() + " 欢迎你的到来");
+                msg['name'] = $("input[ name='logname' ]").val();
+                msg['password'] = $("input[ name='logpass' ]").val();
+                msg['msgType'] = 'set_login_info';
+                ipc.send('msg_config', msg);
+                was_login = true;
+                setTimeout(function () {
+                  window.location.href = "./Main.html";
+                }, 2 * 1000);
+                return;
+              } else {
+                if (data.uFuck == 1)
+                  toastr["error"]("请检查输入信息是否完整!");
+                else if (data.uFuck == 2)
+                  toastr["error"]("用户不存在!");
+                else if (data.uFuck == 3)
+                  toastr["error"]("密码不正确!");
+                else if (data.uFuck == 4)
+                  toastr["error"]("你被ban了,挂逼!");
+
+                return;
+              }
+            } else {
+              toastr["error"]("后方服务器错误 0x2 ,请联系管理员!");
+              console.log('Error');
+            }
+          },
+          error: function (e) {
+            toastr["error"]("后方服务器错误 0x3 ,请联系管理员!");
+            console.log('Error');
+            console.log(e.status);
+            console.log(e.responseText);
+          }
+        });
+      });
+
+      ipc.send('msg_config', msg);
+      require('electron').ipcRenderer.on('msg_get_login', function (event, message) {
+        var data = message.data;
+        var username = data.name;
+        var password = data.password;
+        $("input[ name='logpass' ]").val(password)
+        $("input[ name='logname' ]").val(username)
+      })
+    })
+  </script>
+  <style type="text/css">
+    .demo-1 .large-header {
+      background-image: url('./img/login.jpg');
+    }
+
+    body {
+      font-family:
+        'HelveticaNeue-UltraLight',
+        'Helvetica Neue UltraLight',
+        Roboto,
+        Arial,
+        Sans-serif;
+      backface-visibility: hidden;
+      background: #eee;
+    }
+
+    input[id*="joacims-menu"] {
+      display: none;
+    }
+
+    input[id*="joacims-menu"]+label {
+      display: block;
+      width: 35px;
+      height: 35px;
+      background: #222;
+      cursor: pointer;
+      font-size: 30px;
+      color: #fff;
+      position: relative;
+    }
+
+    input[id*="joacims-menu"]+label span {
+      display: block;
+      position: absolute;
+      left: 8px;
+      transition: .2s;
+    }
+
+    input[id*="joacims-menu"]:checked+label span {
+      transform: rotate(45deg);
+      font-size: 34px;
+      top: -2px;
+      left: 9px;
+    }
+
+    nav a {
+      display: block;
+      height: 40px;
+      line-height: 40px;
+      background: #3e3e3e;
+      width: 100px;
+      padding-left: 10px;
+      text-decoration: none;
+      color: white;
+      box-shadow: 5px 0 0 #000;
+    }
+
+    input[id*="joacims-menu"]~nav a:nth-child(1) {
+      box-shadow: 5px 0 0 #3498db;
+      transition-delay: .05s;
+    }
+
+    input[id*="joacims-menu"]~nav a:nth-child(2) {
+      box-shadow: 5px 0 0 #2ecc71;
+      transition-delay: .10s;
+    }
+
+    input[id*="joacims-menu"]~nav a:nth-child(3) {
+      box-shadow: 5px 0 0 #e67e22;
+      transition-delay: .15s;
+    }
+
+    input[id*="joacims-menu"]~nav a:nth-child(4) {
+      box-shadow: 5px 0 0 #c0392b;
+      transition-delay: .20s;
+    }
+
+    input[id*="joacims-menu"]:checked~nav a {
+      margin-left: 0px;
+    }
+
+    input[id*="joacims-menu"]:checked~nav a:hover {
+      width: 110px;
+    }
+
+    input[id*="joacims-menu"]~nav a {
+      margin-left: -110px;
+      transition: .6s margin;
+    }
+
+    input[id*="joacims-menu"]~nav a:hover {
+      background: #999;
+    }
+  </style>
+  </head>
+
+  <body scroll="no" style="overflow:hidden">
+    <div class="container demo-1">
+      <div class="content">
+        <div id="large-header" class="large-header">
+          <div id="shit">
+            <input style="-webkit-app-region: no-drag;" type="checkbox" id="joacims-menu" checked />
+            <label for="joacims-menu" style="-webkit-app-region: no-drag;"><span>+</span></label>
+            <nav style="-webkit-app-region: no-drag;">
+              <a href="#">平台官网</a>
+              <a href="#">开发者博客</a>
+              <a href="#">开发者批站</a>
+              <a onclick="exit()" href="#">退出平台</a>
+            </nav>
+          </div>
+          <canvas id="demo-canvas"></canvas>
+          <div class="logo_box">
+            <p>给岁月以生命</p>
+            <p>而不是给生命以岁月</p>
+            <p>To the time to life, rather than to life in time</p>
+            <h3>-Blaise Pascal</h3>
+            <form action="" name="Login" method="post" id="LogFrom" style="-webkit-app-region: no-drag;">
+              <div class="input_outer">
+                <span class="u_user"></span>
+                <input id="userLoginName" name="logname" class="text"
+                  style="color: #FFFFFF !important; -webkit-app-region: no-drag;" type="text" placeholder="请输入账户">
+              </div>
+              <div class="input_outer">
+                <span class="us_uer"></span>
+                <!--按理说要前端处理加密的,但是我们不是重要软件[金融/社交],因此可以不用.其实我懒,不好意思-->
+                <input id="userLoginPass" name="logpass" class="text"
+                  style="color: #FFFFFF !important; position:absolute; z-index:100; -webkit-app-region: no-drag;"
+                  value="" type="password" placeholder="请输入密码">
+              </div>
+              <div class="mb2"><a id="Do_login" name="Do_login" class="act-but submit" href="#"
+                  style="color: #FFFFFF ;-webkit-app-region: no-drag;">一键登录</a></div>
+              <div class="mb2"><a onclick="goRegister()" class="act-Reg submit" href="#"
+                  style="color: #FFFFFF; -webkit-app-region: no-drag;">快速注册</a></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <script src="./js/TweenLite.min.js"></script>
+      <script src="./js/EasePack.min.js"></script>
+      <script src="./js/rAF.js"></script>
+      <script src="./js/demo-1.js"></script>
+    </div>
+  </body>
+
+</html>

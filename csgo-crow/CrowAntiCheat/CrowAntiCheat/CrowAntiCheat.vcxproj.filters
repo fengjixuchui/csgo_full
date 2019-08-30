@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="头文件\AntiDebug">
+      <UniqueIdentifier>{e34eb529-5473-4674-bf3b-988a9bcce11c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\HookScaner">
+      <UniqueIdentifier>{84f37c7e-e855-4cbf-af28-e14d40f67ad5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\HookScaner">
+      <UniqueIdentifier>{4fbea033-8fd7-4873-bf95-72925c508c6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\InGame">
+      <UniqueIdentifier>{11244d98-c9e4-4ccf-8502-4f99ce47d447}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\InGame">
+      <UniqueIdentifier>{7aaa6c72-90fc-4f73-83da-8c8085a5b74d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\MemoryScan">
+      <UniqueIdentifier>{3c59fe65-8720-4795-98d2-454fe8363102}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\MemoryScan">
+      <UniqueIdentifier>{07898095-306a-4948-ab15-42a66cf0ac5c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="xorstr.hpp">
+      <Filter>头文件\AntiDebug</Filter>
+    </ClInclude>
+    <ClInclude Include="unity.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HookScaner.h">
+      <Filter>头文件\HookScaner</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DllHider.h">
+      <Filter>头文件\AntiDebug</Filter>
+    </ClInclude>
+    <ClInclude Include="IEngineClient.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="InGame.h">
+      <Filter>头文件\InGame</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryScan.h">
+      <Filter>头文件\MemoryScan</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CrowAntiCheat.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="HookScaner.cpp">
+      <Filter>源文件\HookScaner</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="unity.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="InGame.cpp">
+      <Filter>源文件\InGame</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryScan.cpp">
+      <Filter>源文件\MemoryScan</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

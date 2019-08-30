@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<head style="-webkit-app-region: drag">
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>对战匹配中心</title>
+  <meta name="description" content="" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./searchcenter/css/normalize.css" />
+  <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./searchcenter/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./searchcenter/css/templatemo-style.css" />
+  <link rel="stylesheet" href="./searchcenter/css/buttons.css" />
+  <link rel="stylesheet" href="./searchcenter/css/search_main.css" />
+  <script src="./searchcenter/js/vendor/modernizr-2.6.2.min.js"></script>
+  <script src="./js/md5.js"></script>
+
+</head>
+
+<body min-width:0px; style="overflow:hidden;-webkit-app-region: drag">
+  <div class="chat_top" id="chat_top">
+    <li><a style="overflow:hidden;-webkit-app-region: no-drag" id="chat_top_model" href="#">没有人给你发消息</a></li>
+  </div>
+  <div class="modal fade" id="chat_menu" tabindex="-1" role="dialog" aria-labelledby="chat_menu" aria-hidden="true">
+    <div class="modal-dialog" style="overflow:hidden;-webkit-app-region: no-drag">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title" id="myModalLabel">房间聊天</h4>
+        </div>
+        <div class="modal-body">
+          <div id="chat_box">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="请文明发言!" id="chat_input_msg" name="chat_input_msg">
+            <span class="input-group-btn">
+              <button class="btn btn-default" type="button" id="chat_send_msg">
+                发送!
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="site-bg"></div>
+  <div class="site-bg-overlay"></div>
+  <div class="copyrights">
+    by huoji
+    <a href="https://bbs.wghsotk.com/">幽灵网安</a>
+  </div>
+  <div class="container" id="page-content">
+    <div class="row">
+      <div class="col-md-9 col-sm-12 content-holder">
+        <div id="menu-container">
+          <div id="menu-1" class="homepage home-section text-center">
+            <div class="welcome-text">
+
+              <h2><strong id="roomname">huoji</strong></h2>
+              <p>你好,<strong id="userLoginName">Player</strong>.准备好了与你的队友们开始紧张刺激的掉段之旅了么?</p>
+              <div class="btn-group" role="group" aria-label="" style="-webkit-app-region: no-drag;">
+                <button id="searchbutton" class="searchBtn" style="vertical-align:middle"><span
+                    id="searchP">点击准备</span></button>
+                <!--
+           <div id="in_gaming"><h1>匹配成功!正在游戏中...<a onclick=Retry_connect() href= "#">点击这里进入游戏</a></h1></div>
+          -->
+              </div>
+              <p hidden="hidden" id="count_area">
+                正在搜索中，搜索用时：
+                <span id="count_time">0</span>
+              </p>
+            </div>
+            <!-- 队友详情 -->
+            <div class="friend-area">
+              <div class="friend">
+                <img id="player_ico_1" style="width:100px;height:100px" src="./searchcenter/images/player_def.png"
+                  alt="" />
+                <div class="name" id="player_1">
+                  <h4 id="player_name_1"></h4>
+                </div>
+                <div class="score">
+                  <h4 id="player_rank_1"></h4>
+                  <h4 id="player_ready_1"></h4>
+                </div>
+              </div>
+              <div class="friend">
+                <img id="player_ico_2" style="width:100px;height:100px" src="./searchcenter/images/player_def.png"
+                  alt="" />
+                <div class="name" id="player_2">
+                  <h4 id="player_name_2"></h4>
+                </div>
+                <div class="score">
+                  <h4 id="player_rank_2"></h4>
+                  <h4 id="player_ready_2"></h4>
+                </div>
+              </div>
+              <div class="friend">
+                <img id="player_ico_3" style="width:100px;height:100px" src="./searchcenter/images/player_def.png"
+                  alt="" />
+                <div class="name" id="player_3">
+                  <h4 id="player_name_3"></h4>
+                </div>
+                <div class="score">
+                  <h4 id="player_rank_3"></h4>
+                  <h4 id="player_ready_3"></h4>
+                </div>
+              </div>
+              <div class="friend">
+                <img id="player_ico_4" style="width:100px;height:100px" src="./searchcenter/images/player_def.png"
+                  alt="" />
+                <div class="name" id="player_4">
+                  <h4 id="player_name_4"></h4>
+                </div>
+                <div class="score">
+                  <h4 id="player_rank_4"></h4>
+                  <h4 id="player_ready_4"></h4>
+                </div>
+              </div>
+              <div class="friend">
+                <img id="player_ico_5" style="width:100px;height:100px" src="./searchcenter/images/player_def.png"
+                  alt="" />
+                <div class="name" id="player_5">
+                  <h4 id="player_name_5"></h4>
+                </div>
+                <div class="score">
+                  <h4 id="player_rank_5"></h4>
+                  <h4 id="player_ready_5"></h4>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="menu-2" class="content about-section" style="-webkit-app-region: no-drag;">
+            <div class="row">
+              <div class="box-content user-content">
+                <h3 class="widget-title">房间列表<a href="#" id="refresh_room"><i class="fa fa-refresh"
+                      aria-hidden="true"></i>刷新</a></h3>
+                <!--服务器列表-->
+                <div id='room_list'>
+                </div>
+                <!--服务器列表 end-->
+              </div>
+            </div>
+            <div class="row">
+            </div>
+          </div>
+          <div id="menu-3" class="content gallery-section">
+            <div class="user-info">
+              <h3 class="widget-title">房间设置</h3>
+              <div class="box-content user-content" style="-webkit-app-region: no-drag;">
+                <div class="project-pages">
+                  <div class="user-data-info">
+                    <div class="data-info-box">
+                      <h3>房间名</h3>
+                      <input type="text" class="form-control" placeholder="房间名,不超过6个字" maxlength="6"
+                        id="input_name_of_room" name="input_name_of_room">
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="data-info-box">
+                      <h3>房间简介</h3>
+                      <textarea id="input_text_of_room" class="form-control" rows="3" placeholder="房间简介,不超过25个字"
+                        maxlength="25"></textarea>
+                    </div>
+                    <div style="margin-top:5px">
+                      房间头像:<input type="file" name="picture" id="picture" class="btn btn-default btn-sm" />
+                    </div>
+                    <div style="margin-top:5px"><img style="width:100px;height:100px" id="room_ico"
+                        src="./searchcenter/images/room.jpg" /></div>
+                    <button style="margin-top:5px" type="button" class="btn btn-default btn-sm"
+                      id='upload_image'>上传</button>
+                    <div class="hr-line-dashed"></div>
+                    <div class="data-info-box">
+                      <h3>房间属性</h3>
+                      <p>房间状态: <button id="btn_set_room" type="button" class="btn btn-success"
+                          id='room_config_public'>公开</button></p>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="data-info-box">
+                      <h3>地图</h3>
+                      <p>
+                        <input id="switch-de_dust2" type="checkbox">de_dust2
+                        <input id="switch-de_inferno" type="checkbox">de_inferno
+                        <input id="switch-de_nuke" type="checkbox">de_nuke
+                        <input id="switch-de_mirage" type="checkbox">de_mirage:
+                      </p>
+                      <p>
+                        <input id="switch-de_overpass" type="checkbox">de_overpass
+                        <input id="switch-de_cache" type="checkbox">de_cache
+                        <input id="switch-de_train" type="checkbox">de_train
+                        <input id="switch-de_cbble" type="checkbox">de_cbble
+                      </p>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="data-info-box">
+                      <button type="button" id='room_config_update_room'
+                        class="btn btn-default">更新房间设置(会自动保存到你的配置文件里)</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 hidden-sm" style="-webkit-app-region: no-drag;">
+        <nav id="nav" class="main-navigation hidden-xs hidden-sm">
+          <ul class="main-menu">
+            <li> <a class="show-1 active homebutton" href="#"><i class="fa fa-home"></i>对战匹配</a> </li>
+            <li> <a class="show-2 aboutbutton" href="#"><i class="fa fa-server"></i>房间列表</a> </li>
+            <li> <a class="show-3 projectbutton" href="#"><i class="fa fa-cog"></i>房间设置</a> </li>
+            <li> <a class="show-5 contactbutton" onclick=ExitRoomt() href="#"><i class="fa fa-sign-out"></i>退出房间</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  </div>
+  <script>window.$ = window.jQuery = require('./js/jquery.js');</script>
+  <script src="./searchcenter/js/vendor/jquery-1.10.2.min.js"></script>
+  <script src="./searchcenter/js/plugins.js"></script>
+  <script src="./searchcenter/js/main.js"></script>
+  <script src="https://cdn.bootcss.com/echarts/4.2.1-rc1/echarts.min.js"></script>
+  <link href="https://cdn.bootcss.com/twitter-bootstrap/3.3.1/css/bootstrap.css" rel="stylesheet">
+  <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link href="./css/toastr.min.css" rel="stylesheet">
+  <script src="./js/toastr.min.js"></script>
+  <script>
+    window.toastr = require('toastr');
+    toastr.options = {
+      "closeButton": false,
+      "debug": false,
+      "newestOnTop": true,
+      "progressBar": true,
+      "positionClass": "toast-top-right",
+      "preventDuplicates": false,
+      "onclick": null,
+      "showDuration": "300",
+      "hideDuration": "1000",
+      "timeOut": "10000",
+      "extendedTimeOut": "1000",
+      "showEasing": "swing",
+      "hideEasing": "linear",
+      "showMethod": "fadeIn",
+      "hideMethod": "fadeOut"
+    };
+
+  </script>
+  <script src="./searchcenter/js/search_main.js"></script>
+</body>
+
+</html>

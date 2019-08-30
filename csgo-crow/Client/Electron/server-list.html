@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+
+<head style="-webkit-app-region: drag">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>杂七杂八服务器列表</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>window.$ = window.jQuery = require('./js/jquery.min.js');</script>
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.css" media="all" />
+</head>
+
+<body min-width:0px; style="overflow:hidden;-webkit-app-region: drag">
+    <div id="large-header" class="large-header">
+        <div class="container">
+            <div class="row clearfix">
+                <div class="col-md-12 column">
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            <a href="#">服务器列表</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row clearfix">
+                <div class="col-md-12 column">
+                    <div class="jumbotron well">
+                        <h1>
+                            社区服务发布页
+                        </h1>
+                        <p>
+                            此页面的服务器很多都不是官方服务器!任何人都可以在此页面发布自己的服务器.
+                        </p>
+                        <p style="overflow:hidden;-webkit-app-region: no-drag">
+                            <a class="btn btn-default" onClick="javascript :history.back(-1);" href="#">返回菜单</a>
+                            <a class="btn btn-primary btn-large" href="#">我是服主,发布服务器</a>
+                        </p>
+                    </div>
+                    <div class="alert alert-dismissable alert-warning">
+                        <h4>
+                            各位服主注意!
+                        </h4>
+                        <div>
+                            <strong>!!!发布违规服务器,将会被永久封号!!! 本平台只遵守中华人民共和国的法律法规.</strong>
+                        </div>
+                    </div>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>
+                                    服主
+                                </th>
+                                <th>
+                                    服务器名字
+                                </th>
+                                <th>
+                                    服务器IP:端口
+                                </th>
+                                <th>
+                                    人数
+                                </th>
+                                <th>
+                                    地图
+                                </th>
+                                <th>
+                                    操作
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id='server_tables' style="overflow:hidden;-webkit-app-region: no-drag">
+                            <tr>
+                                <td>
+                                    huoji
+                                </td>
+                                <td>
+                                    练枪服
+                                </td>
+                                <td>
+                                    127.0.0.1:2017
+                                </td>
+                                <td>
+                                    12/64
+                                </td>
+                                <td>
+                                    <a class="btn btn-warning btn-sm" href="#">加入</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    window.toastr = require('toastr');
+    toastr.options = {
+        "closeButton": false,
+        "debug": false,
+        "newestOnTop": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "10000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+    var all_server = {};
+    $.ajax({
+        type: "GET",
+        url: require('electron').remote.getGlobal('sharedObject').WebsiteDomain + 'api/get_all_casual_server/',
+        async: false,
+        success: function (result) {
+            var data = result;
+            if (data.msgType != "get_all_casual_server") {
+                toastr["error"]("后端服务器异常!请联系管理员!");
+                return;
+            }
+            if (data.success) {
+                var html = '';
+                for (var serverid in data.servers) {
+                    var hostname = data.servers[serverid]['hostname'];
+                    var ip = data.servers[serverid]['ip'];
+                    var port = data.servers[serverid]['port'];
+                    var type = data.servers[serverid]['type'];
+                    all_server[serverid] = {
+                        'ip': ip,
+                        'port': port,
+                        'type': type
+                    }
+                    html = html + '<tr><td>' + hostname + '</td><td id=' + serverid + '_server_name >正在准备中...</td><td>' + ip + ':' + port + '</td><td id=' + serverid + '_server_players>正在查询中...</td><td id=' + serverid + '_map >正在查询中...</td><td><a id=' + serverid + '_join class="btn btn-default btn-sm" href="#">准备中</a></td></tr>'
+                }
+                $('#server_tables').html(html);
+                setTimeout(function () {
+                    for (var serverid in all_server) {
+                        var ip = all_server[serverid]['ip'];
+                        var port = all_server[serverid]['port'];
+                        var type = all_server[serverid]['type'];
+                        $.ajax({
+                            type: "GET",
+                            url: require('electron').remote.getGlobal('sharedObject').WebsiteDomain + 'api/resolve_server/',
+                            data: { serverip: ip, port: port },
+                            async: false,
+                            success: function (result) {
+                                var data = result;
+                                var server_html = "#" + serverid;
+                                var server_name = server_html + "_server_name";
+                                var server_players = server_html + "_server_players";
+                                var server_map = server_html + "_map";
+                                var server_join = server_html + "_join";
+                                if (result.success) {
+                                    $(server_name).text(data.server_name);
+                                    $(server_players).text(data.player_count + "/" + data.max_players);
+                                    $(server_map).text(data.map);
+                                    $(server_join).attr("href", "steam://rungame/730/76561202255233023/+connect " + ip + ":" + port);
+                                    $(server_join).text('加入');
+                                    $(server_join).attr("class", "btn btn-success btn-sm");
+                                } else {
+                                    $(server_name).text('超时');
+                                    $(server_players).text('超时');
+                                    $(server_map).text('超时');
+                                    $(server_join).text('无法加入');
+                                    $(server_join).attr("class", "btn btn-danger btn-sm");
+                                    if (!result.timeout) {
+                                        toastr["error"]("发生后端服务器错误!请联系管理员!");
+                                        return;
+                                    }
+                                }
+                            }
+                        })
+                    }
+                }, 2000)
+            } else {
+                toastr["error"]("没有任何社区服务器!");
+                setTimeout(function () {
+                    window.location.href = "./Search.html";
+                }, 2 * 1000);
+                return;
+            }
+        }
+    })
+
+</script>
+
+</html>

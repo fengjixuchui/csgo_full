@@ -1,0 +1,10 @@
+#include "stdafx.h"
+#include "unity.h"
+DWORD  G::MOUDLE;
+DWORD  G::MOUDLE_END;
+DWORD* I::ClientMode;
+DWORD* I::Client;
+DWORD* I::VPanel;
+DWORD* I::ModelRender;
+DWORD* I::Surface;
+IEngineClient* I::Engine;

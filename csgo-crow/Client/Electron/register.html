@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<header style="-webkit-app-region: drag">
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>注册</title>
+	<link rel="stylesheet" type="text/css" href="./css/normalize.css" />
+	<link rel="stylesheet" type="text/css" href="./css/component.css" />
+	<script src="./js/jquery.min.js"></script>
+	<script src="./js/TweenLite.min.js"></script>
+	<link href="./css/toastr.min.css" rel="stylesheet">
+	<script src="./js/toastr.min.js"></script>
+	<script src="https://cdn.vaptcha.com/v2.js"></script>
+	<script>
+		var canLogin = false;
+		var auth_token = '';
+		var was_reg = false;
+		var auth_obj = null;
+		exit = function () {
+			var ipc = require('electron').ipcRenderer;
+			console.log('window-close')
+			ipc.send('window-close');
+		}
+		window.$ = window.jQuery = require('jquery');
+		window.toastr = require('toastr');
+		toastr.options = {
+			"closeButton": false,
+			"debug": false,
+			"newestOnTop": true,
+			"progressBar": true,
+			"positionClass": "toast-top-right",
+			"preventDuplicates": false,
+			"onclick": null,
+			"showDuration": "300",
+			"hideDuration": "1000",
+			"timeOut": "10000",
+			"extendedTimeOut": "1000",
+			"showEasing": "swing",
+			"hideEasing": "linear",
+			"showMethod": "fadeIn",
+			"hideMethod": "fadeOut"
+		};
+		toastr["info"]("欢迎你的注册!");
+		toastr.options['timeOut'] = "5000";
+		$(document).ready(function () {
+			vaptcha({
+				//配置参数
+				vid: require('electron').remote.getGlobal('sharedObject').vaptcha_id, // 验证单元id
+				type: 'invisible', // 展现类型
+				container: '#vaptchaContainer' // 按钮容器，可为Element 或者 selector
+			}).then(function (vaptchaObj) {
+				auth_obj = vaptchaObj;
+				vaptchaObj.listen('pass', function () {
+					canLogin = true;
+					auth_token = vaptchaObj.getToken();
+					post_ajax();
+				})
+				//vaptchaObj.render()// 调用验证实例 vaptchaObj 的 render 方法加载验证按钮
+			})
+			$("#SendRegMsg").click(function () {
+				if (was_reg)
+					return;
+				reg_name = $("input[ name='Regname' ]").val();
+				reg_password = $("input[ name='Regpass' ]").val();
+				reg_email = $("input[ name='Regemail' ]").val();
+				reg_invitecode = $("input[ name='InviteCode' ]").val();
+				if (reg_name == '' || reg_password == '' || reg_email == '' || reg_invitecode == '') {
+					toastr["warning"]("请检查输入信息是否完整!");
+					return;
+				}
+				try {
+					auth_obj.validate();
+				}
+				catch (err) {
+					alert('你遇到了一个问题,原因是因为验证码加载失败了!,极大的可能是你的网络不好! 也有可能是验证码没钱停机了!, 建议稍等一会或者联络管理员!');
+					return;
+				}
+
+				if (!canLogin || auth_token == '') {
+					toastr["warning"]("请先完成人机验证!");
+					return;
+				}
+			});
+			post_ajax = function () {
+				$.ajax({
+					type: "POST",
+					url: require('electron').remote.getGlobal('sharedObject').WebsiteDomain + 'api/register/',
+					data: {
+						Regname: reg_name,
+						Regpass: reg_password,
+						Regemail: reg_email,
+						InviteCode: reg_invitecode,
+						auth: auth_token
+					},
+					async: false,
+					success: function (result) {
+						var data = result;
+						if (data.msgType == 'register') {
+							if (data.uFuck == 1)
+								toastr["warning"]("请检查输入信息是否完整!");
+							else if (data.uFuck == 2)
+								toastr["error"]("邮箱格式不正确!");
+							else if (data.uFuck == 3)
+								toastr["error"]("用户名已经注册!");
+							else if (data.uFuck == 4)
+								toastr["error"]("邮箱已经注册!");
+							else if (data.uFuck == 5)
+								toastr["error"]("用户名包含非法字符");
+							else if (data.uFuck == 6) {
+								toastr["error"]("人机验证不通过!");
+							}
+							else if (data.uFuck == 7) {
+								toastr["error"]("用户名太长!");
+							}
+							else if (data.uFuck == 8) {
+								toastr["error"]("邀请码不正确!");
+							}
+							else if (data.uFuck == 0 && data.success == true) {
+								toastr["success"]("注册成功!欢迎你的加入");
+								was_reg = true;
+								setTimeout(function () {
+									window.location.href = "./index.html";
+								}, 3 * 1000);
+							}
+						} else {
+							toastr["error"]("后方服务器错误 0x2 ,请联系管理员!");
+							console.log('Error');
+						}
+						was_reg = false;
+						auth_obj.reset();
+					},
+					error: function (e) {
+						toastr["error"]("后方服务器错误 0x3 ,请联系管理员!");
+						console.log('Error');
+						console.log(e.status);
+						console.log(e.responseText);
+					}
+				});
+			}
+		});
+	</script>
+
+	<style type="text/css">
+		.demo-1 .large-header {
+			background-image: url('./img/register.jpg');
+		}
+
+		body {
+			font-family:
+				'HelveticaNeue-UltraLight',
+				'Helvetica Neue UltraLight',
+				Roboto,
+				Arial,
+				Sans-serif;
+			backface-visibility: hidden;
+			background: #eee;
+		}
+
+		.avoid-drag {
+			-webkit-app-region: no-drag;
+		}
+
+		input[id*="joacims-menu"] {
+			display: none;
+		}
+
+		input[id*="joacims-menu"]+label {
+			display: block;
+			width: 35px;
+			height: 35px;
+			background: #222;
+			cursor: pointer;
+			font-size: 30px;
+			color: #fff;
+			position: relative;
+		}
+
+		input[id*="joacims-menu"]+label span {
+			display: block;
+			position: absolute;
+			left: 8px;
+			transition: .2s;
+		}
+
+		input[id*="joacims-menu"]:checked+label span {
+			transform: rotate(45deg);
+			font-size: 34px;
+			top: -2px;
+			left: 9px;
+		}
+
+		nav a {
+			display: block;
+			height: 40px;
+			line-height: 40px;
+			background: #3e3e3e;
+			width: 100px;
+			padding-left: 10px;
+			text-decoration: none;
+			color: white;
+			box-shadow: 5px 0 0 #000;
+		}
+
+		input[id*="joacims-menu"]~nav a:nth-child(1) {
+			box-shadow: 5px 0 0 #3498db;
+			transition-delay: .05s;
+		}
+
+		input[id*="joacims-menu"]~nav a:nth-child(2) {
+			box-shadow: 5px 0 0 #2ecc71;
+			transition-delay: .10s;
+		}
+
+		input[id*="joacims-menu"]~nav a:nth-child(3) {
+			box-shadow: 5px 0 0 #e67e22;
+			transition-delay: .15s;
+		}
+
+		input[id*="joacims-menu"]~nav a:nth-child(4) {
+			box-shadow: 5px 0 0 #c0392b;
+			transition-delay: .20s;
+		}
+
+		input[id*="joacims-menu"]:checked~nav a {
+			margin-left: 0px;
+		}
+
+		input[id*="joacims-menu"]:checked~nav a:hover {
+			width: 110px;
+		}
+
+		input[id*="joacims-menu"]~nav a {
+			margin-left: -110px;
+			transition: .6s margin;
+		}
+
+		input[id*="joacims-menu"]~nav a:hover {
+			background: #999;
+		}
+	</style>
+	</head>
+
+	<body>
+		<div class="container demo-1">
+			<div class="content">
+				<div id="large-header" class="large-header">
+					<div id="shit">
+						<input style="-webkit-app-region: no-drag;" type="checkbox" id="joacims-menu" checked />
+						<label for="joacims-menu" style="-webkit-app-region: no-drag;"><span>+</span></label>
+						<nav style="-webkit-app-region: no-drag;">
+							<a href="https://www.wghostk.com">平台官网</a>
+							<a href="https://bbs.wghostk.com">开发者博客</a>
+							<a href="https://space.bilibili.com/101385631">开发者批站</a>
+							<a onclick="exit()" href="#">退出平台</a>
+						</nav>
+					</div>
+					<canvas id="demo-canvas"></canvas>
+					<div class="logo_box">
+						<p>W-WELL,THAT'S NOT WHAT I EXPECTED...BUT...</p>
+						<p>BUT...ST... STILL! I BELIEVE YOU CAN DO A LITTLE BETTER </p>
+						<h3>EVEN IF YOU DON'T THINK SO!I... I PROMISE...</h3>
+						<form action="" name="Login" method="post" id="RegFrom" style="-webkit-app-region: no-drag;">
+							<div class="input_outer">
+								<span class="u_user"></span>
+								<input id=“userReginName” name="Regname" class="text"
+									style="color: #FFFFFF !important; -webkit-app-region: no-drag;" type="text"
+									placeholder="输入用户名">
+							</div>
+							<div class="input_outer">
+								<span class="us_uer"></span>
+								<input id=“userReginPass” name="Regpass" class="text"
+									style="color: #FFFFFF !important; position:absolute; z-index:100;; -webkit-app-region: no-drag;"
+									value="" type="password" placeholder="请输入密码">
+							</div>
+							<div class="input_outer">
+								<span class="u_email"></span>
+								<input id=“userReginEmail” name="Regemail" class="text"
+									style="color: #FFFFFF !important; position:absolute; z-index:100;; -webkit-app-region: no-drag;"
+									value="" type="text" placeholder="请输入邮箱">
+							</div>
+							<div class="input_outer">
+								<span class="u_user"></span>
+								<input id="userInviteCode" name="InviteCode" class="text"
+									style="color: #FFFFFF !important; position:absolute; z-index:100;; -webkit-app-region: no-drag;"
+									value="" type="text" placeholder="请输入邀请码">
+							</div>
+							<div class="mb2"><a data-toggle="modal" data-target="#authModal" id="SendRegMsg"
+									class="act-Reg submit" href="#"
+									style="color: #FFFFFF ;-webkit-app-region: no-drag;">快速注册</a></div>
+							<div class="mb2"><a class="act-but submit" href="./index.html"
+									style="color: #FFFFFF ;-webkit-app-region: no-drag;">返回登录</a></div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div style="text-align:center;">
+			<script src="./js/TweenLite.min.js"></script>
+			<script src="./js/EasePack.min.js"></script>
+			<script src="./js/rAF.js"></script>
+			<script src="./js/demo-1.js"></script>
+		</div>
+	</body>
+
+</html>
