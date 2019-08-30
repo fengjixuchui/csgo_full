@@ -6,7 +6,7 @@
     "electron-rebuild": "^1.8.4"
   },
   "dependencies": {
-    "jquery": "^1.12.4",
+    "jquery": "^3.4.0",
     "nanomsg": "^4.0.2",
     "save-dev": "^2.0.0",
     "socket.io": "^2.2.0",
