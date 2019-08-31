@@ -1,73 +1,103 @@
 #include "stdafx.h"
 #include "unity.h"
 #include <time.h>
-void TCPCLIENT::ReportCheat(CheatReport cheat)
-{
-	std::string ReportMSG = XorString("0x4000") + std::to_string(cheat.report_id) + "|"
-		+ myTools->DwordToString(cheat.report_process_id) + "|"
-		+ myTools->DwordToString(cheat.report_base_address) + "|"
-		+ myTools->DwordToString(cheat.report_region_size) + "|"
-		+ cheat.report_other_data + "|"
-		+ cheat.report_sig;
-	//printf("Report Msg: %s \n", ReportMSG.c_str());
-	ReportMSG = myTools->Base64Encode(ReportMSG);
-	SendPacket(ReportMSG,0);
-	//send(G::hSocket, ReportMSG.c_str(), ReportMSG.length(), 0);
+#include <thread>
+
+void ProcessInfo(PVOID pParam) {
+	HANDLE m_handle = (HANDLE)pParam;
+	if (!m_handle) {
+		return noBug->ClientBugReport();
+	}
+	//MAX_PATH
+	char buf[2019] = "";
+	DWORD rlen = 0;
+	while (true)
+	{
+		if (ConnectNamedPipe(m_handle, NULL) != NULL)
+		{
+			if (ReadFile(m_handle, buf, 2019, &rlen, NULL) == FALSE)
+				return noBug->ClientBugReport();
+			else
+			{
+				//接收信息
+				CheatReport* buffer = (CheatReport*)& buf;
+				//底层设计失误不能用.c_str! x86的string库和x64的string库不同!
+				char* antibug = (char*)& buffer->report_other_data;
+				std::string fuckBUGshit(antibug);
+				//printf("report_base_address: 0x%08X  report_other_data :%s", buffer->report_base_address, buffer->report_other_data);
+				DisconnectNamedPipe(m_handle);
+			}
+		}
+
+	}
 }
-bool TCPCLIENT::SendPacket(std::string buf, int flags)
+bool TCPCLIENT::InitAntiCheat()
 {
-	std::string msg = myTools->EncryptionAES(buf);
-	printf("\n EncryptionAES Msg: %s \n", msg.c_str());
-	return send(G::hSocket, msg.c_str(), msg.length(), 0);
+	G::WebSiteUrl = "127.0.0.1:8000";
+	//Test only!
+	//G::UserSecKey = "6d10c7c5600591d3535ff77c3170ce10";
+
+	//管道要用xor加密
+	HANDLE hPipe = CreateNamedPipe(
+		TEXT("\\\\.\\Pipe\\CrowAntiCheat"),						
+		PIPE_ACCESS_DUPLEX,									
+		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,	
+		PIPE_UNLIMITED_INSTANCES,							
+		0,													
+		0,													
+		NMPWAIT_WAIT_FOREVER,								
+		NULL);
+	if (INVALID_HANDLE_VALUE == hPipe)
+		return false;
+	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)ProcessInfo, (LPVOID)hPipe, NULL, NULL);
+	return true;
 }
-std::string TCPCLIENT::RecvPacket(int flags)
-{
-	char message[128];
-	recv(G::hSocket, message, 128, flags);
-	std::string msg = message;
-	//printf("message  %s \n", msg.c_str());
-	return myTools->DecryptionAES(msg);
-}
+
 bool TCPCLIENT::ConnectAntiCheatServer()
 {	
-	//ip
-	G::AntiCheatServerIP = "127.0.0.1";
-	G::AntiCheatServerPort = 6666;
-	WSADATA wsaData;	
-	SOCKADDR_IN servAddr;
-
-	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-		printf("[TCPClient]WSAStartup() error!");
-	G::hSocket = socket(PF_INET, SOCK_STREAM, 0);
-	if (G::hSocket == INVALID_SOCKET)
-		printf("[TCPClient]hSocket() error");
-
-	memset(&servAddr, 0, sizeof(servAddr));
-	servAddr.sin_family = AF_INET;
-	servAddr.sin_addr.s_addr = inet_addr(G::AntiCheatServerIP.c_str());
-	servAddr.sin_port = htons(G::AntiCheatServerPort);
-	printf("[TCPClient]Connecting %s:%d \n", G::AntiCheatServerIP.c_str(), G::AntiCheatServerPort);
-	if (connect(G::hSocket, (SOCKADDR*)&servAddr, sizeof(servAddr)) == SOCKET_ERROR)
-	{
-		printf("[TCPClient]Connect Error! %d \n", GetLastError());
-		return false;
-	}
-	std::string CRCmsg = "0x6666";
-	SendPacket(CRCmsg.c_str(), 0);
-	std::string hashed = RecvPacket(0);
-	//"0x1337_huoji" 通讯秘钥
-	std::string myKey = T::GetMd5Hash(hashed + XorString("0x1337_huoji"));
-	SendPacket(myKey,0);
-	hashed = RecvPacket(0).substr(0, 5);
-	//printf("Server Msg: %s \n", hashed.c_str());
-	if (hashed.compare(XorString("TRUST")) == 0)
-	{
-		printf("[TCPClient]Success Connect Server! \n");
-		//closesocket(hSocket);
-		//WSACleanup();
-		return true;
-	}
-	closesocket(G::hSocket);
-	WSACleanup();
+	std::string parameter = "login=" + G::UserSecKey;
+	std::string url = G::WebSiteUrl + "/api/anticheat/?" + parameter;
+	std::string result_json = SendHttpRequest(url,HTTP_GET);
+	auto msgType = myTools->JsonGetString(result_json, "msgType");
+	if (msgType.compare(XorString("AC_Login")) == 0)
+		return myTools->JosnGetInt(result_json, "success");
+	
 	return false;
+}
+
+size_t write_data(void* ptr, size_t size, size_t nmemb, void* stream)
+{
+	std::string data((const char*)ptr, (size_t)size * nmemb);
+
+	*((std::stringstream*)stream) << data << std::endl;
+
+	return size * nmemb;
+}
+std::string TCPCLIENT::SendHttpRequest(std::string url,HTTPREQUEST get_or_post, std::string json_data)
+{
+	CURL* curl = curl_easy_init();
+	CURLcode res = CURLE_OK;
+	std::stringstream out;
+	struct curl_slist* headers = NULL;
+	//我这个版本的curl不支持https!要自己用OPENSSL编译一个版本
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	headers = curl_slist_append(headers, "Content-Type:application/json;charset=UTF-8");
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+	curl_easy_setopt(curl, CURLOPT_POST, get_or_post);//0 = GET 1 = POST
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30);
+	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 30);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, false);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &out);
+	if (HTTP_POST == get_or_post)
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_data.c_str());
+	res = curl_easy_perform(curl);
+	if (res != CURLE_OK) {
+		return std::string();
+	}
+	curl_slist_free_all(headers);
+	std::string result = out.str();
+	curl_easy_cleanup(curl);
+	return result;
 }

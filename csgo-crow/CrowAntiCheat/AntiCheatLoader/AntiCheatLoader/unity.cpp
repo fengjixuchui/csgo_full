@@ -3,10 +3,71 @@
 #include "AES.h"
 std::string G::UserSecKey;
 std::string G::WebSiteUrl;
-std::string G::AntiCheatServerIP;
-SOCKET  G::hSocket;
-int G::AntiCheatServerPort;
+SOCKET G::ClientSocket;
+int MyTools::JosnGetInt(std::string json, char* data) {
+	try
+	{
+		Document m_json;
+		m_json.Parse(json.c_str());
+		Value& json_decode = m_json[data];
+		return json_decode.GetInt();
+	}
+	catch (const std::exception&)
+	{
+		return -1;
+	}
 
+}
+std::string MyTools::JsonGetString(std::string json, char* data) {
+	try
+	{
+		Document m_json;
+		m_json.Parse(json.c_str());
+		Value& json_decode = m_json[data];
+		return json_decode.GetString();
+	}
+	catch (const std::exception&)
+	{
+		return std::string();
+	}
+
+}
+std::vector<std::string> MyTools::Split(const std::string& src, const std::string& separator) //字符串分割到数组
+{
+	std::vector<std::string> dest;
+	std::string str = src;
+	std::string substring;
+	std::string::size_type start = 0, index;
+	dest.clear();
+	index = str.find_first_of(separator, start);
+	do
+	{
+		if (index != string::npos)
+		{
+			substring = str.substr(start, index - start);
+			dest.push_back(substring);
+			start = index + separator.size();
+			index = str.find(separator, start);
+			if (start == string::npos) break;
+		}
+	} while (index != string::npos);
+
+	//the last part
+	substring = str.substr(start);
+	dest.push_back(substring);
+	return dest;
+}
+std::string MyTools::GetStringHash(std::string str)
+{
+	ULONG64 seed = 0x1337;
+	ULONG64 hash = 0;
+	const char* HashText = str.c_str();
+	while (*HashText) {
+		hash = hash * seed + (*HashText++);
+	}
+	ULONG64 result = (hash & 0x7FFFFFFF);
+	return std::to_string(result);
+}
 //关闭文件重定向系统
 BOOL MyTools::DisableWow64FsRedirection(void)
 {
@@ -414,9 +475,9 @@ BOOL MyTools::DeviceDosPathToNtPath(wchar_t* pszDosPath, wchar_t* pszNtPath)
 
 	return FALSE;
 }
-DWORD MyTools::Str2Dword(std::string str)
+DWORD64 MyTools::Str2Dword(std::string str)
 {
-	DWORD result;
+	DWORD64 result;
 	std::istringstream is(str);
 	is >> result;
 	return result;

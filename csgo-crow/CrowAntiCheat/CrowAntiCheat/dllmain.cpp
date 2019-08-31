@@ -7,20 +7,40 @@
 */
 HookScaner* hkScanerEngine = new HookScaner;
 MemoryScan* MMSCAN = new MemoryScan;
+void CheckHooks() {
+	while (true) {
+		Sleep(20000);
+		hkScanerEngine->CheckVMTHook();
+		Reporter->HeartBeat();
+	}
+}
 void AntiCheatThread()
 {
 	hkScanerEngine->InstallScanner();
-	hkScanerEngine->CheckVMTHook();
 	MMSCAN->StartScan();
+	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)CheckHooks, NULL, NULL, NULL);
 }
 void Cheat(HMODULE hDLL)
 {
 	DisableThreadLibraryCalls(hDLL);
+
 	char bkjaa[] = { 'V','a','l','v','e','0','0','1','\0' };
 	HWND Window;
 	while (!(Window = FindWindowA(bkjaa, NULL))) Sleep(200);
+	BOOL bRet = WaitNamedPipeA(XorString("\\\\.\\Pipe\\CrowAntiCheat"), NMPWAIT_WAIT_FOREVER);
+	if (!bRet)
+		exit(1);
+	G::hPipe = CreateFileA(
+		XorString("\\\\.\\Pipe\\CrowAntiCheat"),
+		GENERIC_READ | GENERIC_WRITE,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
 	//Hooks::oldWindowProc = (WNDPROC)SetWindowLongPtr(G::Window, GWL_WNDPROC, (LONG_PTR)Hooks::WndProc);
 	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)AntiCheatThread, NULL, NULL, NULL);
+
 }
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,

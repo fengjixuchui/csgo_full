@@ -22,9 +22,6 @@
 #include <atlconv.h>
 #include <sstream>
 #include <iostream>
-#pragma comment(lib, "ws2_32.lib")  
-#pragma comment(lib, "Wintrust.lib") 
-#pragma comment(lib, "crypt32.lib")
 #include "xorstr.hpp"
 #include "CallBacks.h"
 #include "TCPserver.h"
@@ -33,19 +30,32 @@
 #include "OverlayFinder.h"
 #include "AntiCheatEngine.h"
 #include "SigScaner.h"
+#include "NoBugZ.h"
+#include "../../ShareLib/curl/include/curl.h"
+#include "../../ShareLib/rapidjson/document.h"
+#include "../../ShareLib/rapidjson/writer.h"
+#include "../../ShareLib/rapidjson/stringbuffer.h"
+#pragma comment(lib,"../../ShareLib/curl/libcurl.lib")
+#pragma comment(lib, "ws2_32.lib")  
+#pragma comment(lib, "Wintrust.lib") 
+#pragma comment(lib, "crypt32.lib")
+#pragma comment(lib, "ws2_32.lib" )
+#pragma comment(lib, "winmm.lib" )
+#pragma comment(lib, "wldap32.lib" )
+#pragma comment(lib, "Advapi32.lib")
+using namespace rapidjson;
 static SIGSCANER* SigScaner = new SIGSCANER;
 static ANTICHEATENGINE* AntiCheatEngine = new ANTICHEATENGINE;
 static TCPSERVER *ServerEngine = new TCPSERVER;
 static TCPCLIENT *ClientEngine = new TCPCLIENT;
 static myCALLBACK* myCallBack = new myCALLBACK;
 static OVERLAYFUCKER* OverLayFucker = new OVERLAYFUCKER;
+static NoBugZ* noBug = new NoBugZ;
 namespace G
 {
 	extern std::string UserSecKey;
 	extern std::string WebSiteUrl;
-	extern std::string AntiCheatServerIP;
-	extern SOCKET hSocket;
-	extern int AntiCheatServerPort;
+	extern SOCKET ClientSocket;
 }
 namespace T
 {
@@ -61,6 +71,10 @@ class MyTools
 public:
 	const char g_key[17] = "apffwetyhjyrtsfd";
 	const char g_iv[17] = "gfdartgqhjkuyrlp";
+	int JosnGetInt(std::string json, char* data);
+	std::string JsonGetString(std::string json, char* data);
+	std::vector<std::string> Split(const std::string& src, const std::string& separator);
+	std::string GetStringHash(std::string str);
 	//void SendMd52Server(CString FileDirectory);
 	BOOL DisableWow64FsRedirection(void);
 
@@ -82,7 +96,7 @@ public:
 
 	BOOL DeviceDosPathToNtPath(wchar_t * pszDosPath, wchar_t * pszNtPath);
 
-	DWORD Str2Dword(std::string str);
+	DWORD64 Str2Dword(std::string str);
 
 	std::vector<std::string> splitWithStl(const std::string & str, const std::string & pattern);
 

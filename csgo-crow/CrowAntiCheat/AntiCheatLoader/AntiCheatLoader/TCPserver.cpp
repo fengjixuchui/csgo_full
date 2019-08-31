@@ -1,20 +1,21 @@
 #include "stdafx.h"
 #include "unity.h"
 #include <time.h>
+void TCPSERVER::SentPack(std::string pack)
+{
+	if (G::ClientSocket) 
+		send(G::ClientSocket,pack.c_str(), pack.length(),0);
+}
 bool TCPSERVER::CreateTCPserver()
 {
 	WSADATA wsaData;
 	int port = 5099;
 
-//	char buf[] = "Server: hello, I am a server.....";
-
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
-	//	printf("Failed to load Winsock");
 		return false;
 	}
 
-	//创建用于监听的套接字  
 	SOCKET sockSrv = socket(AF_INET, SOCK_STREAM, 0);
 
 	SOCKADDR_IN addrSrv;
@@ -24,22 +25,18 @@ bool TCPSERVER::CreateTCPserver()
 
 	int retVal = bind(sockSrv, (LPSOCKADDR)&addrSrv, sizeof(SOCKADDR_IN));
 	if (retVal == SOCKET_ERROR) {
-	//	printf("Failed bind:%d\n", WSAGetLastError());
 		return false;
 	}
 
 	if (listen(sockSrv, 10) == SOCKET_ERROR) {
-	//	printf("Listen failed:%d", WSAGetLastError());
 		return false;
 	}
 
 	SOCKADDR_IN addrClient;
 	int len = sizeof(SOCKADDR);
-	SOCKET sockConn;
 	static bool first = false;
-	sockConn = accept(sockSrv, (SOCKADDR *)&addrClient, &len);
-	if (sockConn == SOCKET_ERROR) {
-		printf("Accept failed:%d", WSAGetLastError());
+	G::ClientSocket = accept(sockSrv, (SOCKADDR *)&addrClient, &len);
+	if (G::ClientSocket == SOCKET_ERROR) {
 		return false;
 	}
 	
@@ -47,16 +44,13 @@ bool TCPSERVER::CreateTCPserver()
 	{
 		char recvBuf[100];
 		memset(recvBuf, 0, sizeof(recvBuf));
-		if (recv(sockConn, recvBuf, sizeof(recvBuf), 0) == 0 || sockConn == INVALID_SOCKET)
+		if (recv(G::ClientSocket, recvBuf, sizeof(recvBuf), 0) == 0 || G::ClientSocket == INVALID_SOCKET)
 		{
 			first = false;
-			printf("Client Disconnect \n");
-			closesocket(sockConn);
-			sockConn = accept(sockSrv, (SOCKADDR *)&addrClient, &len);
+			closesocket(G::ClientSocket);
+			G::ClientSocket = accept(sockSrv, (SOCKADDR *)&addrClient, &len);
 			continue;
 		}
-
-		//printf("%s\n", recvBuf);
 		std::string IPC = recvBuf;
 		std::string IPCnumber = IPC.substr(0, 7);
 		if (IPCnumber.compare(XorString("0x01337")) == 0)
@@ -68,34 +62,27 @@ bool TCPSERVER::CreateTCPserver()
 			Check_number = std::to_string(myt) + XorString("Xor1337_TheDuck!");
 			Check_number = T::GetMd5Hash(T::GetMd5Hash(Check_number));
 			const char *buf = Check_number.c_str();
-		//	printf("buf %s \n", buf);
-			send(sockConn, buf, 32, 0);
-			
+			send(G::ClientSocket, buf, 32, 0);
 			continue;
 		}
 		if (!first)
 		{
 			//第二条信息必须是校验码当发了0x01337后否则断开
 			std::string recvKey = T::GetMd5Hash(Check_number + T::GetMd5Hash(Password));
-		//	printf("recvKey %s \n", recvKey);
 			if (IPC.compare(recvKey) == 0)
 				first = true;
 			else
-				closesocket(sockConn),
-				sockConn = accept(sockSrv, (SOCKADDR *)&addrClient, &len);
+				closesocket(G::ClientSocket),
+				G::ClientSocket = accept(sockSrv, (SOCKADDR *)&addrClient, &len);
 			continue;
 		}
 
 		//可能有bug,注意
 		if (IPCnumber.compare(XorString("0x01338")) == 0)
 			myCallBack->OnClientLogin(IPC.erase(0, 7));
-		if (IPCnumber.compare(XorString("0x01340")) == 0)
-			myCallBack->OnBindSteamID(IPC.erase(0, 7));
 		if(IPCnumber.compare(XorString("0x01339")) == 0)
 			myCallBack->OnConnectCSGOServer(IPC.erase(0, 7));
-	//	closesocket(sockConn);
 	}
-
 	closesocket(sockSrv);
 	WSACleanup();
 	return false;

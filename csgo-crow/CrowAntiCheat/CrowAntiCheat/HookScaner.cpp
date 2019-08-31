@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "unity.h"
 #include "DllHider.h"
+
 extern VOID HideModule(HMODULE hLibrary);
 extern HMODULE LoadDll(LPCSTR lpFileName);
 DWORD HookScaner::GetMoudleEnd(DWORD start)
@@ -55,21 +56,31 @@ void HookScaner::InstallScanner()
 	HideModule(LoadDll(XorString("d3d9.dll")));
 	HideModule(LoadDll(XorString("d3d9_43.dll")));
 	HideModule(LoadDll(XorString("vgui2.dll")));
-	
 	*/
 }
 
 void HookScaner::CheckVMTHook()
 {
 	//抄BE的代码
+	ReportStruct m_report;
 	int vtable_index = 0;
+	bool found = false;
+	MEMORY_BASIC_INFORMATION memory_information = { 0 };
 	for (vtable_index = 0; vtable_index < m_VMTList.CreateMove_Client_VTSize; vtable_index++)
 	{
 		if (*(DWORD*)&m_VMTList.CreateMove_Client[vtable_index] < module_entry_client.modBaseAddr ||
 			*(DWORD*)&m_VMTList.CreateMove_Client[vtable_index] >= module_entry_client.modBaseEndAddr
 			|| m_VMTList.CreateMove_Client[0] == 0xCC )
 		{
-			T::PrintMessage("DECTETION ClientMode<client_panorama.dll> VMT HOOK! \n");
+			m_report.report_base_address = m_VMTList.CreateMove_Client[vtable_index];
+			m_report.report_id = Report_VMT_Hook;
+			m_report.report_process_id = -1;
+			m_report.report_region_size = m_VMTList.CreateMove_Client_VTSize;
+			m_report.report_sig = "0";
+			m_report.report_other_data = "ClientMode[" + std::to_string(vtable_index) + "]";
+			//T::PrintMessage("DECTETION ClientMode<client_panorama.dll> VMT HOOK! \n");
+			Reporter->CheatReport(m_report);
+			exit(1);
 		}
 	}
 	for (vtable_index = 0; vtable_index < m_VMTList.PaintTraverse_VTSize; vtable_index++)
@@ -78,9 +89,25 @@ void HookScaner::CheckVMTHook()
 			*(DWORD*)&m_VMTList.PaintTraverse[vtable_index] >= module_entry_vgui2.modBaseEndAddr
 			|| m_VMTList.PaintTraverse[0] == 0xCC)
 		{
-			//nvapi.dll
-			if(vtable_index != 67)
-				T::PrintMessage("DECTETION PaintTraverse<vgui2.dll> VMT HOOK!  HookAddr: 0x%08X in index: %d \n", m_VMTList.PaintTraverse[vtable_index], vtable_index);
+			if (VirtualQuery((PVOID)m_VMTList.PaintTraverse[vtable_index], &memory_information, sizeof(memory_information)) >= 0)
+			{
+				if (memory_information.State == MEM_PRIVATE)
+					found = true;
+			}
+			if (vtable_index != 67)		
+				found = true;
+			if (found)
+			{
+				m_report.report_base_address = m_VMTList.PaintTraverse[vtable_index];
+				m_report.report_id = Report_VMT_Hook;
+				m_report.report_process_id = -1;
+				m_report.report_region_size = m_VMTList.PaintTraverse_VTSize;
+				m_report.report_sig = "0";
+				m_report.report_other_data = "PaintTraverse[" + std::to_string(vtable_index) + "]";
+				//T::PrintMessage("DECTETION PaintTraverse<vgui2.dll> VMT HOOK!  HookAddr: 0x%08X in index: %d \n", m_VMTList.PaintTraverse[vtable_index], vtable_index);
+				Reporter->CheatReport(m_report);
+				exit(1);
+			}
 		}
 	}
 	for (vtable_index = 0; vtable_index < m_VMTList.Client_VTSize; vtable_index++)
@@ -89,7 +116,15 @@ void HookScaner::CheckVMTHook()
 			*(DWORD*)&m_VMTList.Client[vtable_index] >= module_entry_client.modBaseEndAddr
 			|| m_VMTList.Client[0] == 0xCC)
 		{
-			T::PrintMessage("DECTETION Client<client_panorama.dll> VMT HOOK! \n");
+			m_report.report_base_address = m_VMTList.Client[vtable_index];
+			m_report.report_id = Report_VMT_Hook;
+			m_report.report_process_id = -1;
+			m_report.report_region_size = m_VMTList.Client_VTSize;
+			m_report.report_sig = "0";
+			m_report.report_other_data = "Client[" + std::to_string(vtable_index) + "]";
+			//T::PrintMessage("DECTETION Client<client_panorama.dll> VMT HOOK! \n");
+			Reporter->CheatReport(m_report);
+			exit(1);
 		}
 	}
 	for (vtable_index = 0; vtable_index < m_VMTList.Surface_VTSize; vtable_index++)
@@ -98,33 +133,72 @@ void HookScaner::CheckVMTHook()
 			*(DWORD*)&m_VMTList.Surface[vtable_index] >= module_entry_vguimatsurface.modBaseEndAddr
 			|| m_VMTList.Surface[0] == 0xCC)
 		{
-			T::PrintMessage("DECTETION Surface<vguimatsurface.dll> VMT HOOK! \n");
+			m_report.report_base_address = m_VMTList.Surface[vtable_index];
+			m_report.report_id = Report_VMT_Hook;
+			m_report.report_process_id = -1;
+			m_report.report_region_size = m_VMTList.Surface_VTSize;
+			m_report.report_sig = "0";
+			m_report.report_other_data = "Surface";
+			//T::PrintMessage("DECTETION Surface<vguimatsurface.dll> VMT HOOK! \n");
+			Reporter->CheatReport(m_report);
+			exit(1);
 		}
 	}
 	for (vtable_index = 0; vtable_index < m_VMTList.ModelRender_VTSize; vtable_index++)
 	{
+		
 		if (*(DWORD*)&m_VMTList.ModelRender[vtable_index] < module_entry_engine.modBaseAddr ||
 			*(DWORD*)&m_VMTList.ModelRender[vtable_index] >= module_entry_engine.modBaseEndAddr
 			|| m_VMTList.ModelRender[0] == 0xCC)
 		{
-			//第二轮检查是否在comctl32里
-			if (*(DWORD*)&m_VMTList.ModelRender[vtable_index] < module_entry_comctl32.modBaseAddr ||
-				*(DWORD*)&m_VMTList.ModelRender[vtable_index] >= module_entry_comctl32.modBaseEndAddr)
+
+			if (VirtualQuery((PVOID)m_VMTList.ModelRender[vtable_index], &memory_information, sizeof(memory_information)) >= 0)
 			{
-				T::PrintMessage("DECTETION ModelRender<engine.dll> VMT HOOK! HookAddr: 0x%08X in index: %d \n", m_VMTList.ModelRender[vtable_index], vtable_index);
+				if (memory_information.State == MEM_PRIVATE)
+					found = true;
 			}
-			
+			else {
+				if (*(DWORD*)& m_VMTList.ModelRender[vtable_index] < module_entry_comctl32.modBaseAddr ||
+					*(DWORD*)& m_VMTList.ModelRender[vtable_index] >= module_entry_comctl32.modBaseEndAddr)
+				{
+					if (vtable_index != 45)
+						found = true;
+				}
+			}
+			if (found) {
+				m_report.report_base_address = m_VMTList.ModelRender[vtable_index];
+				m_report.report_id = Report_VMT_Hook;
+				m_report.report_process_id = -1;
+				m_report.report_region_size = m_VMTList.ModelRender_VTSize;
+				m_report.report_sig = "0";
+				m_report.report_other_data = "ModelRender[" + std::to_string(vtable_index) + "]";
+				//T::PrintMessage("DECTETION ModelRender<engine.dll> VMT HOOK! HookAddr: 0x%08X in index: %d \n", m_VMTList.ModelRender[vtable_index], vtable_index);
+				Reporter->CheatReport(m_report);
+				exit(1);
+			}
 		}
+
 	}
-	/*
 	for (vtable_index = 0; vtable_index < m_VMTList.D3DDriver_VTSize; vtable_index++)
 	{
-		if (*(int*)&m_VMTList.D3DDriver[vtable_index] < module_entry_D3DX.modBaseAddr ||
-			*(int*)&m_VMTList.D3DDriver[vtable_index] >= module_entry_D3DX.modBaseEndAddr)
+		if (*(DWORD*)&m_VMTList.D3DDriver[vtable_index] < module_entry_D3DX.modBaseAddr ||
+			*(DWORD*)&m_VMTList.D3DDriver[vtable_index] >= module_entry_D3DX.modBaseEndAddr)
 		{
-			//只检查16和42
-			if(vtable_index == 16 || vtable_index == 42)
-				T::PrintMessage("DECTETION D3DDriver<shaderapidx9.dll> VMT HOOK! \n");
+			if (VirtualQuery((PVOID)m_VMTList.D3DDriver[vtable_index], &memory_information, sizeof(memory_information)) >= 0)
+			{
+				if (memory_information.State == MEM_PRIVATE)
+				{
+					m_report.report_base_address = m_VMTList.D3DDriver[vtable_index];
+					m_report.report_id = Report_VMT_Hook;
+					m_report.report_process_id = -1;
+					m_report.report_region_size = m_VMTList.D3DDriver_VTSize;
+					m_report.report_sig = "0";
+					m_report.report_other_data = "D3DDriver[" + std::to_string(vtable_index) + "]";
+					//T::PrintMessage("DECTETION D3D VMT HOOK! HookAddr: 0x%08X in index: %d \n", m_VMTList.D3DDriver[vtable_index], vtable_index);
+					Reporter->CheatReport(m_report);
+					exit(1);
+				}
+			}
 		}
-	}*/
+	}
 }

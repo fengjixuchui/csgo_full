@@ -1,0 +1,8 @@
+﻿  SigScaner.cpp
+I:\对战平台\csgo_full\csgo-crow\CrowAntiCheat\AntiCheatLoader\AntiCheatLoader\SigScaner.cpp(155,12): warning C4244:  “参数”: 从“time_t”转换到“unsigned int”，可能丢失数据
+  正在生成代码
+  3 of 817 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    14 functions had inline decision re-evaluated but remain unchanged
+  已完成代码的生成
+  AntiCheatLoader.vcxproj -> I:\对战平台\csgo_full\csgo-crow\CrowAntiCheat\AntiCheatLoader\x64\Release\AntiCheatLoader.exe

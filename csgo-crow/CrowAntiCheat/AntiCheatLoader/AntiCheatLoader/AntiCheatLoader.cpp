@@ -3,10 +3,7 @@
 
 #include "stdafx.h"
 #include "unity.h"
-void DoTCPserver() 
-{
-	ServerEngine->CreateTCPserver();
-}
+
 int main()
 {
 	printf("                 $$$$$$                        \n");
@@ -24,20 +21,10 @@ int main()
 	printf("                 //   //       $$              \n");
 	printf("                //-   //                       \n");
 	printf(" ╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋╋\n");
-	printf("[SYSTEM]CrowAntiCheat staring ... \n");
-	/*
-	if (!ClientEngine->ConnectAntiCheatServer())
-	{
-		printf("[ClientEngine]Cant Connect to Server...\n");
-		system("pause");
-		return 0;
-	}*/
-	printf("[CreateTCPserver]Starting CreateTCPserver...\n");
-//	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)DoTCPserver, NULL, NULL, NULL);
-	printf("[AntiCheatEngine]Starting AntiCheatEngine...\n");
-//	AntiCheatEngine->Work();
-//	SigScaner->GetSig("C:\\ApexLoadInject.exe");
+	printf(XorString("[SYSTEM]反作弊启动中... \n"));
+	ClientEngine->InitAntiCheat();
+	printf(XorString("[SYSTEM]初始化完毕! \n"));
+	printf("%s", SigScaner->GetSig("H:\\5ewin\\CSGO_PRO\\5e专用注入器\\ConsoleApplication1\\Release\\ConsoleApplication1.exe", "0x1868390020|4967|0x487237497|3137|0x1548597252|2813|").c_str());
 	ServerEngine->CreateTCPserver();
-	system("pause");
     return 0;
 }

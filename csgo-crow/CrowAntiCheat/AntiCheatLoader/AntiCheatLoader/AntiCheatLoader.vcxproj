@@ -50,6 +50,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -131,7 +132,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BUILDING_LIBCURL;HTTP_ONLY;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -139,16 +140,47 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>../../ShareLib/curl/libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\ShareLib\curl\include\curl.h" />
+    <ClInclude Include="..\..\ShareLib\curl\include\curlbuild.h" />
+    <ClInclude Include="..\..\ShareLib\curl\include\curlrules.h" />
+    <ClInclude Include="..\..\ShareLib\curl\include\curlver.h" />
+    <ClInclude Include="..\..\ShareLib\curl\include\easy.h" />
+    <ClInclude Include="..\..\ShareLib\curl\include\mprintf.h" />
+    <ClInclude Include="..\..\ShareLib\curl\include\multi.h" />
+    <ClInclude Include="..\..\ShareLib\curl\include\stdcheaders.h" />
+    <ClInclude Include="..\..\ShareLib\curl\include\typecheck-gcc.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\allocators.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\cursorstreamwrapper.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\document.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\encodedstream.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\encodings.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\filereadstream.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\filewritestream.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\fwd.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\istreamwrapper.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\memorybuffer.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\memorystream.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\ostreamwrapper.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\pointer.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\prettywriter.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\rapidjson.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\reader.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\schema.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\stream.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\stringbuffer.h" />
+    <ClInclude Include="..\..\ShareLib\rapidjson\writer.h" />
     <ClInclude Include="AES.h" />
     <ClInclude Include="AntiCheatEngine.h" />
     <ClInclude Include="CallBacks.h" />
     <ClInclude Include="MD5Encrypt.h" />
+    <ClInclude Include="NoBugZ.h" />
     <ClInclude Include="OverlayFinder.h" />
     <ClInclude Include="SigScaner.h" />
     <ClInclude Include="stdafx.h" />
@@ -164,6 +196,7 @@
     <ClCompile Include="AntiCheatLoader.cpp" />
     <ClCompile Include="CallBacks.cpp" />
     <ClCompile Include="MD5Encrypt.cpp" />
+    <ClCompile Include="NoBugZ.cpp" />
     <ClCompile Include="OverlayFinder.cpp" />
     <ClCompile Include="SigScaner.cpp" />
     <ClCompile Include="stdafx.cpp">

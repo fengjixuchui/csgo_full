@@ -9,6 +9,7 @@ var HOST = '127.0.0.1';
 var PORT = 5099;
 let bind_steamid_window;
 var mainWindow = null;
+var first_connect = false;
 const Store = require('./store.js');
 const store = new Store({
   configName: 'crow_csgo',
@@ -68,12 +69,7 @@ ipc.on('msg_config', function (event, msg) {
   }
 })
 
-/*
-ipc.on('window-bind_steamid', function () {
-  client.write('0x01340' + global.sharedObject.UserSecKey);
-})
 ipc.on('TCP-Login', function () {
-  console.log('TCP LOGIN');
   client.write('0x01338' + global.sharedObject.UserSecKey);
 })
 
@@ -87,14 +83,21 @@ client.connect(PORT, HOST, function () {
 });
 
 client.on('data', function (data) {
-  //  console.log('DATA: ' + data);
-  var password = 'TheSuperDucker_By_Ha4k1r';
-  var check_number = data + password.MD5(32);
-  client.write(check_number.MD5(32));
-  //  console.log('MD5:' + check_number.MD5(32));
-  //  client.destroy();
+  if (!first_connect) {
+    var password = 'TheSuperDucker_By_Ha4k1r';
+    var check_number = data + password.MD5(32);
+    client.write(check_number.MD5(32));
+    first_connect = true;
+  } else {
+    var data_str = data.toString();
+    if (data_str.indexOf("0x1779") != -1)
+      mainWindow.webContents.send('msg_connect_server', 'unsuccess');
+    if (data_str.indexOf("0x1778") != -1)
+      mainWindow.webContents.send('msg_connect_server', 'success');
+  }
+
 });
 client.on('close', function () {
   console.log('Connection closed');
   app.quit();
-});*/
+});

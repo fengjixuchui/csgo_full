@@ -26,7 +26,7 @@ typedef enum _THREADINFOCLASS {
 	MaxThreadInfoClass
 } THREADINFOCLASS;
 
-typedef LONG(WINAPI *NtQueryInformationThreadProc)(
+typedef LONG(WINAPI* NtQueryInformationThreadProc)(
 	_In_       HANDLE ThreadHandle,
 	_In_       THREADINFOCLASS ThreadInformationClass,
 	_Inout_    PVOID ThreadInformation,
@@ -48,6 +48,7 @@ typedef LONG(WINAPI *ZwQueryVirtualMemoryProc)(
 	IN ULONG MemoryInformationLength,
 	OUT PULONG ReturnLength OPTIONAL);
 static ZwQueryVirtualMemoryProc ZwQueryVirtualMemory = (ZwQueryVirtualMemoryProc)GetProcAddress(GetModuleHandleA(XorString("ntdll.dll")), XorString("ZwQueryVirtualMemory"));
+
 struct MOUDLES_ADDR
 {
 	DWORD entry;
@@ -58,6 +59,11 @@ public:
 	void Install();
 	DWORD GetMoudleEnd(DWORD start);
 	void Anomaly_check(MEMORY_BASIC_INFORMATION memory_information);
+
+	void CheckThread();
+	
+	void guard_check(void* current_address, MEMORY_BASIC_INFORMATION memory_information);
+
 	void StartScan();
 	MOUDLES_ADDR entry[255];
 	int i = 0;

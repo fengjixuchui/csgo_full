@@ -2,6 +2,7 @@
 #include "unity.h"
 DWORD  G::MOUDLE;
 DWORD  G::MOUDLE_END;
+HANDLE G::hPipe;
 DWORD* I::ClientMode;
 DWORD* I::Client;
 DWORD* I::VPanel;

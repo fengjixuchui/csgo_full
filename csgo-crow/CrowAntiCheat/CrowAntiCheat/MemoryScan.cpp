@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "MemoryScan.h"
 
+
 void MemoryScan::Install()
 {
 	//先比对正常模块list:
@@ -39,13 +40,20 @@ void MemoryScan::Anomaly_check(MEMORY_BASIC_INFORMATION memory_information)
 			((DWORD)memory_information.BaseAddress & 0xFFFFF0000000) != 0x70000000 && // UPPER EQUALS 0x70000
 			(DWORD)memory_information.BaseAddress != 0x3E0000)
 		{
-			//ban
+			ReportStruct m_report;
+			m_report.report_base_address = (DWORD)memory_information.BaseAddress;
+			m_report.report_id = Report_MEMORY_SUSPICIOUS;
+			m_report.report_process_id = -1;
+			m_report.report_region_size = memory_information.RegionSize;
+			m_report.report_sig = "0";
+			m_report.report_other_data = "null";
+			Reporter->CheatReport(m_report);
+			exit(0);
 		}
 	}
 }
-void MemoryScan::StartScan()
+void MemoryScan::CheckThread()
 {
-	BOOL bRet = false;
 	auto check_section = [&](LPCVOID address)
 	{
 		MEMORY_BASIC_INFORMATION mbi = { 0 };
@@ -62,56 +70,100 @@ void MemoryScan::StartScan()
 		}
 		return false;
 	};
+	while (true)
+	{
+		HANDLE hSnapshort = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, GetCurrentProcessId());
+		THREADENTRY32 stcThreadInfo;
+		stcThreadInfo.dwSize = sizeof(stcThreadInfo);
+		bool bRet = Thread32First(hSnapshort, &stcThreadInfo);
+		while (bRet)
+		{
+			if (GetCurrentProcessId() == stcThreadInfo.th32OwnerProcessID)
+			{
+				PVOID  ThreadStartAddr = 0;
+				HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_TERMINATE, FALSE, stcThreadInfo.th32ThreadID);
+				if (hThread)
+				{
+					NtQueryInformationThread(hThread, ThreadQuerySetWin32StartAddress, &ThreadStartAddr, sizeof(ThreadStartAddr), NULL);
+					if (ThreadStartAddr != 0)
+					{
+						bool bFoundManualMap = true;
+
+						//得到线程地址后,与已知的模块比对查看大小是否在已知的模块中.
+						for (int z = 0; z < i; z++)
+						{
+							if (ThreadStartAddr >= (PVOID)entry[z].entry &&
+								ThreadStartAddr <= (PVOID)entry[z].endaddr)
+							{
+								bFoundManualMap = false;
+								continue;
+							}
+						}
+						if (bFoundManualMap && check_section(ThreadStartAddr))
+						{
+							//T::PrintMessage("Found ManualMap Dll <0x%08X> ThreadID: %d ThreadFromPID: %d \n", ThreadStartAddr, stcThreadInfo.th32ThreadID, stcThreadInfo.th32OwnerProcessID);
+							ReportStruct m_report;
+							m_report.report_id = Report_ManualMap;
+							m_report.report_base_address = (DWORD)ThreadStartAddr;
+							m_report.report_process_id = -1;
+							m_report.report_region_size = 0;
+							m_report.report_sig = "0";
+							m_report.report_other_data = "UnknownThread";
+							Reporter->CheatReport(m_report);
+							exit(1);
+						}
+					}
+					CloseHandle(hThread);
+				}
+
+			}
+			bRet = Thread32Next(hSnapshort, &stcThreadInfo);
+		}
+		CloseHandle(hSnapshort);
+		Sleep(200);
+	}
+}
+void StartCheckThread() {
+	MMSCAN->CheckThread();
+}
+void MemoryScan::guard_check(void* current_address, MEMORY_BASIC_INFORMATION memory_information)
+{
+	if (memory_information.Protect != PAGE_NOACCESS)
+	{
+		LPVOID temporary_buffer = 0;
+		auto bad_ptr = IsBadReadPtr(current_address, sizeof(current_address));
+		auto read = ReadProcessMemory(GetCurrentProcess(),current_address,temporary_buffer,sizeof(temporary_buffer),0);
+		if (read < 0 || bad_ptr)
+		{
+			MEMORY_BASIC_INFORMATION new_memory_information = { 0 };
+			auto query = VirtualQuery(current_address, &new_memory_information, sizeof(new_memory_information));
+			bool guard = query < 0 || new_memory_information.State != memory_information.State || new_memory_information.Protect != memory_information.Protect;
+
+			if (guard)
+			{
+				ReportStruct m_report;
+				m_report.report_id = Report_MEMORY_GUARD;
+				m_report.report_base_address = (DWORD)memory_information.BaseAddress;
+				m_report.report_process_id = -1;
+				m_report.report_region_size = memory_information.RegionSize;
+				m_report.report_sig = "0";
+				m_report.report_other_data = "GUARD_MEMORY";
+				Reporter->CheatReport(m_report);
+				exit(0);
+			}
+		}
+	}
+}
+void MemoryScan::StartScan()
+{
+	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)StartCheckThread, NULL, NULL, NULL);
 	auto check_isWhileShit = [&](LPCVOID address)
 	{
 		char byData[0x10] = { 0 };
 
 		return false;
 	};
-	//1.枚举全部线程得到stcThreadInfo.th32ThreadID;
-	HANDLE hSnapshort = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, GetCurrentProcessId());
-	// 获得线程列表，里面记录了线程的详细信息，再使用Thread32First和Thread32Next遍历快照中记录的每个线程信息
-	THREADENTRY32 stcThreadInfo;
-	stcThreadInfo.dwSize = sizeof(stcThreadInfo);
-	bRet = Thread32First(hSnapshort, &stcThreadInfo);
-	bool bFoundTheShit = false;
-	while (bRet)
-	{
-		if (GetCurrentProcessId() == stcThreadInfo.th32OwnerProcessID)
-		{
-			//T::PrintMessage("hThread ID <0x%d> \n", stcThreadInfo.th32ThreadID);
-			//2.NtQueryInformationThread查起始位置
-			PVOID  ThreadStartAddr = 0;
-			HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_TERMINATE, FALSE, stcThreadInfo.th32ThreadID);
-			NtQueryInformationThread(hThread, ThreadQuerySetWin32StartAddress, &ThreadStartAddr, sizeof(ThreadStartAddr), NULL);
-		//	T::PrintMessage("hThread <0x%08X> hThread ID: %d \n", ThreadStartAddr, stcThreadInfo.th32ThreadID);
-			if (ThreadStartAddr != 0)
-			{
-				bool bFoundManualMap = true;
-
-				//得到线程地址后,与已知的模块比对查看大小是否在已知的模块中.
-				for (int z = 0; z < i; z++)
-				{
-					if (ThreadStartAddr >= (PVOID)entry[z].entry &&
-						ThreadStartAddr <= (PVOID)entry[z].endaddr)
-					{
-						bFoundManualMap = false;
-						continue;
-					}
-				}
-				if (bFoundManualMap && check_section(ThreadStartAddr))
-				{
-					T::PrintMessage("Found ManualMap Dll <0x%08X> ThreadID: %d ThreadFromPID: %d \n", ThreadStartAddr, stcThreadInfo.th32ThreadID, stcThreadInfo.th32OwnerProcessID);
-					bFoundTheShit = true;
-				}
-			}
-			CloseHandle(hThread);
-		}	
-		bRet = Thread32Next(hSnapshort, &stcThreadInfo);
-	}
-	CloseHandle(hSnapshort);
 	MEMORY_BASIC_INFORMATION memory_information = { 0 };
-	BYTE szBuffer[MAX_PATH * 2 + 4] = { 0 };
 	for (DWORD current_address = 0;
 		VirtualQuery((PVOID)current_address, &memory_information, sizeof(memory_information)) >= 0;
 		current_address = (DWORD)memory_information.BaseAddress + (DWORD)memory_information.RegionSize)
@@ -131,55 +183,44 @@ void MemoryScan::StartScan()
 			continue;
 		if(memory_information.Protect == PAGE_READONLY)
 			continue;
-		if (ZwQueryVirtualMemory(GetCurrentProcess(), (PVOID)current_address, MemorySectionName, szBuffer, sizeof(szBuffer), 0) < 0)
-		{
-			if(memory_information.RegionSize == 4096 ||
-				memory_information.RegionSize == 8192 ||
-				memory_information.RegionSize == 65536 ||
-				memory_information.RegionSize == 294912 ||
-				memory_information.RegionSize == 495616)
-				continue;
-			bool bFoundManualMap = true;
-			for (int z = 0; z < i; z++)
-			{
-				if (current_address >= entry[z].entry &&
-					current_address <= entry[z].endaddr)
-				{
-					bFoundManualMap = false;
-					continue;
-				}
-			}
-			if (bFoundManualMap)
-			{
-				T::PrintMessage("Found Unknown Moudle <0x%08X> size: %d \n", current_address, memory_information.RegionSize);
-				bFoundTheShit = true;
-			}
-		}	
-		Anomaly_check(memory_information);
-	}
-	/*
-	//0x00040000系统保留地址
-	DWORD dwStartAddr = 0x00040000; 
-	do
-	{
-		dwStartAddr += 0x1000;
+		if (memory_information.RegionSize == 1000 ||
+			memory_information.RegionSize == 2000 ||
+			memory_information.RegionSize == 4096 ||
+			memory_information.RegionSize == 8192 ||
+			memory_information.RegionSize == 294912 ||
+			memory_information.RegionSize == 495616)
+			continue;
+		bool bFoundManualMap = true;
 		for (int z = 0; z < i; z++)
 		{
-			if (dwStartAddr >= entry[z].entry && dwStartAddr < entry[z].endaddr)
+			if (current_address >= entry[z].entry &&
+				current_address <= entry[z].endaddr)
 			{
-				dwStartAddr += entry[z].endaddr;
+				bFoundManualMap = false;
 				continue;
 			}
 		}
-		if (check_section((PVOID)dwStartAddr))
+		if (bFoundManualMap || memory_information.State == MEM_PRIVATE)
 		{
-			T::PrintMessage("Found Unknown Moudle <0x%08X> \n", dwStartAddr);
-			bFoundTheShit = true;
-			break;
+			//T::PrintMessage("Found Unknown Moudle <0x%08X> size: %d \n", current_address, memory_information.RegionSize);
+			ReportStruct m_report;
+			m_report.report_id = Report_ManualMap;
+			m_report.report_base_address = (DWORD)memory_information.BaseAddress;
+			m_report.report_process_id = -1;
+			m_report.report_region_size = memory_information.RegionSize;
+			m_report.report_sig = "0";
+			m_report.report_other_data = "UnknownMoudle";
+			Reporter->CheatReport(m_report);
+			exit(0);
 		}
-	} while (dwStartAddr < 0x80000000);*/
+		Anomaly_check(memory_information);
+		guard_check((void*)current_address, memory_information);
+		Sleep(500);
+	}
+	/*
 	if(!bFoundTheShit)
 		T::PrintMessage("Not Find ManualMap Moudle \n");
 	else
 		T::PrintMessage("Found ManualMap Moudle \n");
+		*/
 }

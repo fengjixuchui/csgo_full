@@ -15,12 +15,14 @@
     var was_login = false;
     var login_limit = 0;
     var limited = false;
+    var anticheat_lock = false;
     var msg = {
       'msgType': 'get_login_info',
       'name': '',
       'password': ''
     }
-    var ipc = require('electron').ipcRenderer;
+    const electron = require('electron');
+    var ipc = electron.ipcRenderer;
     exit = function () {
       console.log('window-close');
       ipc.send('window-close');
@@ -47,7 +49,7 @@
       "showMethod": "fadeIn",
       "hideMethod": "fadeOut"
     };
-    toastr["info"]("欢迎来到" + require('electron').remote.getGlobal('sharedObject').WebSiteName);
+    toastr["info"]("欢迎来到" + electron.remote.getGlobal('sharedObject').WebSiteName);
     toastr.options['timeOut'] = "5000";
     $(document).ready(function () {
       $("#Do_login").click(function () {
@@ -71,7 +73,7 @@
         login_limit += 1;
         $.ajax({
           type: "POST",
-          url: require('electron').remote.getGlobal('sharedObject').WebsiteDomain + 'api/login/',
+          url: electron.remote.getGlobal('sharedObject').WebsiteDomain + 'api/login/',
           data: {
             logname: $("input[ name='logname' ]").val(),
             logpass: $("input[ name='logpass' ]").val()
@@ -82,17 +84,9 @@
             var data = result;
             if (data.msgType == 'Login') {
               if (data.success) {
-                require('electron').remote.getGlobal('sharedObject').UserName = $("input[ name='logname' ]").val();
-                require('electron').remote.getGlobal('sharedObject').UserSecKey = data.secKey;
-                toastr["success"]("登陆成功! " + $("input[ name='logname' ]").val() + " 欢迎你的到来");
-                msg['name'] = $("input[ name='logname' ]").val();
-                msg['password'] = $("input[ name='logpass' ]").val();
-                msg['msgType'] = 'set_login_info';
-                ipc.send('msg_config', msg);
-                was_login = true;
-                setTimeout(function () {
-                  window.location.href = "./Main.html";
-                }, 2 * 1000);
+                electron.remote.getGlobal('sharedObject').UserName = $("input[ name='logname' ]").val();
+                electron.remote.getGlobal('sharedObject').UserSecKey = data.secKey;
+                ipc.send('TCP-Login');
                 return;
               } else {
                 if (data.uFuck == 1)
@@ -102,7 +96,7 @@
                 else if (data.uFuck == 3)
                   toastr["error"]("密码不正确!");
                 else if (data.uFuck == 4)
-                  toastr["error"]("你被ban了,挂逼!");
+                  toastr["error"]("你被ban了!");
 
                 return;
               }
@@ -121,12 +115,32 @@
       });
 
       ipc.send('msg_config', msg);
-      require('electron').ipcRenderer.on('msg_get_login', function (event, message) {
+      electron.ipcRenderer.on('msg_get_login', function (event, message) {
         var data = message.data;
         var username = data.name;
         var password = data.password;
         $("input[ name='logpass' ]").val(password)
         $("input[ name='logname' ]").val(username)
+      })
+      electron.ipcRenderer.on('msg_connect_server', function (event, message) {
+        var data = message;
+        console.log("data: " + data);
+        if (data == 'unsuccess') {
+          anticheat_lock = false;
+          toastr["error"]("无法连接到反作弊服务器!联系管理员");
+        } else if (data == 'success') {
+          anticheat_lock = true;
+          toastr["success"]("成功连接到反作弊服务器!");
+          toastr["success"]("登陆成功! " + $("input[ name='logname' ]").val() + " 欢迎你的到来");
+          msg['name'] = $("input[ name='logname' ]").val();
+          msg['password'] = $("input[ name='logpass' ]").val();
+          msg['msgType'] = 'set_login_info';
+          ipc.send('msg_config', msg);
+          was_login = true;
+          setTimeout(function () {
+            window.location.href = "./Main.html";
+          }, 2 * 1000);
+        }
       })
     })
   </script>

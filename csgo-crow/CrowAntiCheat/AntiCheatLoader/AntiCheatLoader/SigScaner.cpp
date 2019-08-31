@@ -80,15 +80,15 @@ std::string SIGSCANER::GetSigHex(char * data, int len)
 		else if (i >= (len - 1)) strcat_s(buf, "\r\n");
 		*/
 	}
-	printf(buf);
+	//printf(buf);
 	return std::string(buf);
 }
-std::string SIGSCANER::GetSig(std::string FilePatch)
+std::string SIGSCANER::GetSig(std::string FilePatch, std::string sig)
 {
 	//1 将PE文件读取到内存
 	HANDLE hFile = CreateFileA(FilePatch.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
-		return NULL;
+		return std::string();
 	DWORD dwSize = GetFileSize(hFile, NULL);
 	DWORD dwRubbish = 0;
 	unsigned char * pBuf = new unsigned char[dwSize];
@@ -105,7 +105,7 @@ std::string SIGSCANER::GetSig(std::string FilePatch)
 		if (pNt_32->Signature != IMAGE_NT_SIGNATURE)
 		{
 			//report error
-			return NULL;
+			return std::string();
 		}
 	}
 	else
@@ -113,27 +113,25 @@ std::string SIGSCANER::GetSig(std::string FilePatch)
 		if (pNt_64->Signature != IMAGE_NT_SIGNATURE)
 		{
 			//report error
-			return NULL;
+			return std::string();
 		}
 	}
 	if (pDos->e_magic != IMAGE_DOS_SIGNATURE)
 	{
 		//report error
-		return NULL;
+		return std::string();
 	}
 	auto check_section = [&](LPCVOID address)
 	{
 		MEMORY_BASIC_INFORMATION mbi = { 0 };
 		if (VirtualQuery(address, &mbi, sizeof(mbi)))
 		{
-			if (mbi.RegionSize > 0x10)
+			if (mbi.RegionSize > 0x5 && mbi.Protect != PAGE_NOACCESS)
 				return true;
 		}
 		return false;
 	};
-	//2.1 找到文件头
 	PIMAGE_FILE_HEADER  pFileHeader = Win_32 ? &pNt_32->FileHeader : &pNt_64->FileHeader;
-	//2.2找到扩展头、
 	PIMAGE_OPTIONAL_HEADER32 pOptionHeader_32 = NULL;
 	PIMAGE_OPTIONAL_HEADER64 pOptionHeader_64 = NULL;
 	if (Win_32)
@@ -144,59 +142,100 @@ std::string SIGSCANER::GetSig(std::string FilePatch)
 	g_dwImageBase = Win_32 ? pOptionHeader_32->ImageBase : pOptionHeader_64->ImageBase;
 	g_DataBase = Win_32 ? pOptionHeader_32->BaseOfCode : pOptionHeader_64->BaseOfCode;
 	g_Size = Win_32 ? pOptionHeader_32->SizeOfCode : pOptionHeader_64->SizeOfCode;
-	g_DataBase += (DWORD)pDos;
+	g_DataBase += (DWORD64)pDos;
 	if (!g_DataBase || !g_Size)
 	{
 		//report bug
 		printf("Report BUG Because zero");
 		system("pause");
-		return NULL;
+		return std::string();
 	}
-	char bTmp[0x10] = { 0 };	
+	char bTmp[0x5] = { 0 };	
 	int SigCount = 0;
 	srand(time(NULL));
-	DWORD EndBase = g_DataBase + g_Size;
+	DWORD64 EndBase = g_DataBase + g_Size;
 	std::string Result;
-	while (true)
-	{
-		if (SigCount > 3)
-			break;
-		int Value = rand() % (g_Size - 0x1);
-	
-		DWORD dwTmpAddr = g_DataBase + Value;
-		if (dwTmpAddr > EndBase || dwTmpAddr < g_DataBase || !check_section((LPCVOID)dwTmpAddr))
-			continue;
-		char byData[0x10] = { 0 };
-		memcpy(byData, (void*)dwTmpAddr, 0x10);
-		if (strcmp(byData, bTmp))
-		{
-			printf("ADDR:%08X sigcount:%d \n", dwTmpAddr, SigCount);
-			Result = Result + GetSigHex(byData, 0x10) + "|";
-			SigCount++;
-		}
-	}
-	/*
-	for (int i = 0; i < 5; i++)
-	{
-		if (dwTmpAddr > EndBase || dwTmpAddr < g_DataBase || !check_section((LPCVOID)dwTmpAddr))
-			continue;
-		char byData[0x10] = { 0 };
-		memcpy(byData, (void*)dwTmpAddr, 0x10);
-		if (strcmp(byData, bTmp))
-		{
-			if (AddrSig == GetSigHex(byData, 0x10))
-			{
-				printf("[Success]ADDR:%08X \n", dwTmpAddr);
+	if (sig == std::string()) {
+		for (int i = 0; i < 50; i++) {
+			if (SigCount >= 3)
 				break;
+			DWORD64 Value = rand() % (g_Size - 0x1);
+			DWORD64 dwTmpAddr = g_DataBase + Value;
+			if (dwTmpAddr > EndBase || dwTmpAddr < g_DataBase || !check_section((LPCVOID)dwTmpAddr))
+				continue;
+			char byData[0x5] = { 0 };
+			memcpy(byData, (void*)dwTmpAddr, 0x5);
+			if (strcmp(byData, bTmp) != 0)
+			{
+				//printf("ADDR:%08X sigcount:%d \n", dwTmpAddr, SigCount);
+				std::string hashed = "0x" + myTools->GetStringHash(GetSigHex(byData, 0x5));
+				Result = Result + hashed + "|" + std::to_string(Value) +"|";
+				SigCount++;
 			}
 		}
-		//因为只有一个 所以先break
-		break;
-	}*/
+	}
+	else {
+		
+		std::vector<std::string>::iterator m_iter;
+		std::vector<std::string> m_sig = myTools->Split(sig, "|");
+		std::vector<std::string> m_pos;
+		std::vector<std::string> m_target;
+		int index = 0;
+		
+		for (m_iter = m_sig.begin(); m_iter != m_sig.end(); m_iter++)
+		{
+			std::string m_str = *m_iter;
+			if (index % 2 == 0)
+				m_target.push_back(m_str);
+			else
+				m_pos.push_back(m_str);
+			index++;
+		}
+
+		for (int i = 0; i < 3; i++) {
+			if (SigCount >= 2)
+			{
+				//report
+				printf("【可疑进程】 \n");
+				break;
+			}
+			
+			DWORD64 offset = myTools->Str2Dword(m_pos.at(i));
+			DWORD64 dwTmpAddr = g_DataBase + offset;
+			if (dwTmpAddr > EndBase || dwTmpAddr < g_DataBase || !check_section((LPCVOID)dwTmpAddr))
+				continue;
+			char byData[0x5] = { 0 };
+			memcpy(byData, (void*)dwTmpAddr, 0x5);
+			if (strcmp(byData, bTmp) != 0)
+			{
+				std::string hashed = "0x" + myTools->GetStringHash(GetSigHex(byData, 0x5));
+				if (hashed.compare(m_target.at(i)) == 0) {
+					SigCount++;
+					printf("sig: %s mysig: %s \n", hashed.c_str(),m_target.at(i).c_str());
+				}
+			}
+		}
+	}
+
 	CloseHandle(hFile);
-	free(pBuf);
+	delete[] pBuf;
+	//printf("sig: %s \n", Result.c_str());
 	//return Result[0] + "|" + Result[1] + "|" + Result[2] + "|" + Result[3] + "|" + Result[4];
 	return Result;
+}
+bool SIGSCANER::FindSig(std::string sig)
+{
+	//sig应该是3个 0x1836303849|0x1480841447|0x245305464
+	std::string myLocalSig = "0x1836303849|0x1480841447|0x245305464";
+	try
+	{
+		std::vector<std::string>::iterator m_iter;
+		std::vector<std::string> m_sig = myTools->Split(sig, "|");
+	}
+	catch (const std::exception&)
+	{
+		return false;
+	}
 }
 void SIGSCANER::Work()
 {
@@ -204,7 +243,7 @@ void SIGSCANER::Work()
 	pe32.dwSize = sizeof(pe32);
 	HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (hProcessSnap == INVALID_HANDLE_VALUE) {
-		std::cout << "CreateToolhelp32Snapshot Error!" << std::endl;;
+		//std::cout << "CreateToolhelp32Snapshot Error!" << std::endl;;
 		//bug report
 		return;
 	}
@@ -217,8 +256,7 @@ void SIGSCANER::Work()
 		HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_TERMINATE, FALSE, pe32.th32ProcessID);
 		if (hProcess) {
 			std::string ntpatch = myTools->GetProcessFullPath(hProcess);
-			GetSig(ntpatch);
-
+			GetSig(ntpatch,"0x412906680|23024|0x215991421|13031|0x734096188|19936|");
 			CloseHandle(hProcess);
 		}
 		//std::cout << "[" << ++num << "] : " << "Process Name:"<< name << "  " << "ProcessID:" << id << std::endl;
@@ -226,5 +264,6 @@ void SIGSCANER::Work()
 		bResult = Process32Next(hProcessSnap, &pe32);
 	}
 	CloseHandle(hProcessSnap);
+	printf("Scan Success \n");
 	return;
 }

@@ -144,7 +144,7 @@ void OVERLAYFUCKER::Work()
 			Reporter.report_region_size = 0x0;
 			Reporter.report_other_data = ntpatch;
 			Reporter.report_sig = myTools->Base64Encode(SigScaner->GetSig(ntpatch));
-			ClientEngine->ReportCheat(Reporter);
+
 			char szBuf[64];
 			sprintf_s(szBuf, XorString("taskkill /PID %d /T /F"), pid);
 			system(szBuf);

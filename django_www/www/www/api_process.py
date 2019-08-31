@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 import base64,time,random,hashlib,json,re,django,platform
-from . import server_helper,match,view,web_socket,search_process,GlobalVar
+from . import server_helper,match,view,web_socket,search_process,GlobalVar,anticheatz
 from www.index import player as index_player
 
 
@@ -429,4 +429,6 @@ def process(request, moudle):
         result = match.main(request)
     if moudle in 'get_match':
         result = match.get_matched_info(request)
+    if moudle in 'anticheat':
+        result = anticheatz.main(request)
     return result

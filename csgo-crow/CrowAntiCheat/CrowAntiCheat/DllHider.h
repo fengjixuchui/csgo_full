@@ -2,12 +2,7 @@
 #include <Windows.h> 
 #include <comutil.h>
 #include "unity.h"
-typedef struct _UNICODE_STRING { // UNICODE_STRING structure   
-	USHORT Length;
-	USHORT MaximumLength;
-	PWSTR  Buffer;
-} UNICODE_STRING;
-typedef UNICODE_STRING *PUNICODE_STRING;
+
 
 typedef LONG NTSTATUS;
 

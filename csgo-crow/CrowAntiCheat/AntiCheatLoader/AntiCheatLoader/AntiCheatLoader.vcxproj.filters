@@ -31,6 +31,21 @@
     <Filter Include="头文件\AntiCheat">
       <UniqueIdentifier>{e9008715-608e-4f95-8dfb-e1157587ac2b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ShareLib">
+      <UniqueIdentifier>{0220af5a-cdee-467e-91a7-835c1132d465}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ShareLib\RapidJSON">
+      <UniqueIdentifier>{baedc53c-55a8-4fc0-a088-14239e917490}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ShareLib\curl">
+      <UniqueIdentifier>{423739c8-f858-4195-97e8-d6a1d7774497}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\NoBugZ">
+      <UniqueIdentifier>{bb9b8ad5-e67c-4a39-8a02-e19d5f2f49e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\NoBugZ">
+      <UniqueIdentifier>{8c8b4479-351a-4157-bc0a-dc9252906131}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -72,6 +87,96 @@
     <ClInclude Include="AES.h">
       <Filter>头文件\MD5</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\allocators.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\cursorstreamwrapper.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\document.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\encodedstream.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\encodings.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\filereadstream.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\filewritestream.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\fwd.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\istreamwrapper.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\memorybuffer.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\memorystream.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\ostreamwrapper.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\pointer.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\prettywriter.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\rapidjson.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\reader.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\schema.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\stream.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\stringbuffer.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\rapidjson\writer.h">
+      <Filter>ShareLib\RapidJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\curl\include\curl.h">
+      <Filter>ShareLib\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\curl\include\curlbuild.h">
+      <Filter>ShareLib\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\curl\include\curlrules.h">
+      <Filter>ShareLib\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\curl\include\curlver.h">
+      <Filter>ShareLib\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\curl\include\easy.h">
+      <Filter>ShareLib\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\curl\include\mprintf.h">
+      <Filter>ShareLib\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\curl\include\multi.h">
+      <Filter>ShareLib\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\curl\include\stdcheaders.h">
+      <Filter>ShareLib\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ShareLib\curl\include\typecheck-gcc.h">
+      <Filter>ShareLib\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="NoBugZ.h">
+      <Filter>源文件\NoBugZ</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -106,6 +211,9 @@
     </ClCompile>
     <ClCompile Include="AES.cpp">
       <Filter>源文件\MD5</Filter>
+    </ClCompile>
+    <ClCompile Include="NoBugZ.cpp">
+      <Filter>头文件\NoBugZ</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
