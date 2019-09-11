@@ -10,7 +10,9 @@ enum ReportType
 	Report_SigedCheat,
 	Report_VMT_Hook,
 	Report_ManualMap,
-	Report_UnknownMoudle
+	Report_UnknownMoudle,
+	Report_MEMORY_SUSPICIOUS,
+	Report_MEMORY_GUARD
 };
 struct CheatReport {
 	ReportType report_id;
@@ -25,5 +27,6 @@ class TCPCLIENT {
 public:
 	bool InitAntiCheat();
 	bool ConnectAntiCheatServer();
+	void ReportCheat(CheatReport m_parameter);
 	std::string SendHttpRequest(std::string url, HTTPREQUEST get_or_post, std::string json_data = "A");
 };

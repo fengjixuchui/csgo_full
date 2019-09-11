@@ -202,7 +202,7 @@ void MemoryScan::StartScan()
 		}
 		if (bFoundManualMap || memory_information.State == MEM_PRIVATE)
 		{
-			//T::PrintMessage("Found Unknown Moudle <0x%08X> size: %d \n", current_address, memory_information.RegionSize);
+			T::PrintMessage("Found Unknown Moudle <0x%08X> size: %d \n", current_address, memory_information.RegionSize);
 			ReportStruct m_report;
 			m_report.report_id = Report_ManualMap;
 			m_report.report_base_address = (DWORD)memory_information.BaseAddress;

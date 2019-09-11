@@ -27,9 +27,9 @@ void Cheat(HMODULE hDLL)
 	char bkjaa[] = { 'V','a','l','v','e','0','0','1','\0' };
 	HWND Window;
 	while (!(Window = FindWindowA(bkjaa, NULL))) Sleep(200);
-	BOOL bRet = WaitNamedPipeA(XorString("\\\\.\\Pipe\\CrowAntiCheat"), NMPWAIT_WAIT_FOREVER);
-	if (!bRet)
-		exit(1);
+	//BOOL bRet = WaitNamedPipeA(XorString("\\\\.\\Pipe\\CrowAntiCheat"), NMPWAIT_WAIT_FOREVER);
+	//if (!bRet)
+	//	exit(1);
 	G::hPipe = CreateFileA(
 		XorString("\\\\.\\Pipe\\CrowAntiCheat"),
 		GENERIC_READ | GENERIC_WRITE,

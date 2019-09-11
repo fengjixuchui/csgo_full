@@ -24,7 +24,7 @@ int main()
 	printf(XorString("[SYSTEM]反作弊启动中... \n"));
 	ClientEngine->InitAntiCheat();
 	printf(XorString("[SYSTEM]初始化完毕! \n"));
-	printf("%s", SigScaner->GetSig("H:\\5ewin\\CSGO_PRO\\5e专用注入器\\ConsoleApplication1\\Release\\ConsoleApplication1.exe", "0x1868390020|4967|0x487237497|3137|0x1548597252|2813|").c_str());
+//	printf("%s", SigScaner->GetSig("H:\\5ewin\\CSGO_PRO\\5e专用注入器\\ConsoleApplication1\\Release\\ConsoleApplication1.exe", "0x1868390020|4967|0x487237497|3137|0x1548597252|2813|").c_str());
 	ServerEngine->CreateTCPserver();
     return 0;
 }

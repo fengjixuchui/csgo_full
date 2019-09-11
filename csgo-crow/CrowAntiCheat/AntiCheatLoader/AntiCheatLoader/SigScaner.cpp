@@ -145,9 +145,10 @@ std::string SIGSCANER::GetSig(std::string FilePatch, std::string sig)
 	g_DataBase += (DWORD64)pDos;
 	if (!g_DataBase || !g_Size)
 	{
+		noBug->ClientBugReport();
 		//report bug
-		printf("Report BUG Because zero");
-		system("pause");
+		//printf("Report BUG Because zero");
+		//system("pause");
 		return std::string();
 	}
 	char bTmp[0x5] = { 0 };	
@@ -195,8 +196,15 @@ std::string SIGSCANER::GetSig(std::string FilePatch, std::string sig)
 		for (int i = 0; i < 3; i++) {
 			if (SigCount >= 2)
 			{
-				//report
-				printf("【可疑进程】 \n");
+				CheatReport m_report;
+				m_report.report_id = Report_SigedCheat;
+				m_report.report_base_address = 0;
+				m_report.report_process_id = -1;
+				m_report.report_region_size = 0;
+				m_report.report_sig = sig;
+				m_report.report_other_data = FilePatch;
+				ClientEngine->ReportCheat(m_report);
+				//printf("【可疑进程】 \n");
 				break;
 			}
 			
@@ -211,7 +219,7 @@ std::string SIGSCANER::GetSig(std::string FilePatch, std::string sig)
 				std::string hashed = "0x" + myTools->GetStringHash(GetSigHex(byData, 0x5));
 				if (hashed.compare(m_target.at(i)) == 0) {
 					SigCount++;
-					printf("sig: %s mysig: %s \n", hashed.c_str(),m_target.at(i).c_str());
+					//printf("sig: %s mysig: %s \n", hashed.c_str(),m_target.at(i).c_str());
 				}
 			}
 		}
@@ -222,20 +230,6 @@ std::string SIGSCANER::GetSig(std::string FilePatch, std::string sig)
 	//printf("sig: %s \n", Result.c_str());
 	//return Result[0] + "|" + Result[1] + "|" + Result[2] + "|" + Result[3] + "|" + Result[4];
 	return Result;
-}
-bool SIGSCANER::FindSig(std::string sig)
-{
-	//sig应该是3个 0x1836303849|0x1480841447|0x245305464
-	std::string myLocalSig = "0x1836303849|0x1480841447|0x245305464";
-	try
-	{
-		std::vector<std::string>::iterator m_iter;
-		std::vector<std::string> m_sig = myTools->Split(sig, "|");
-	}
-	catch (const std::exception&)
-	{
-		return false;
-	}
 }
 void SIGSCANER::Work()
 {

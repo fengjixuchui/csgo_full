@@ -16,7 +16,7 @@ void ProcessInfo(PVOID pParam) {
 		if (ConnectNamedPipe(m_handle, NULL) != NULL)
 		{
 			if (ReadFile(m_handle, buf, 2019, &rlen, NULL) == FALSE)
-				return noBug->ClientBugReport();
+				continue;
 			else
 			{
 				//接收信息
@@ -24,7 +24,7 @@ void ProcessInfo(PVOID pParam) {
 				//底层设计失误不能用.c_str! x86的string库和x64的string库不同!
 				char* antibug = (char*)& buffer->report_other_data;
 				std::string fuckBUGshit(antibug);
-				//printf("report_base_address: 0x%08X  report_other_data :%s", buffer->report_base_address, buffer->report_other_data);
+				printf("report_base_address: 0x%08X  report_other_data :%s \n", buffer->report_base_address, buffer->report_other_data);
 				DisconnectNamedPipe(m_handle);
 			}
 		}
@@ -63,6 +63,10 @@ bool TCPCLIENT::ConnectAntiCheatServer()
 		return myTools->JosnGetInt(result_json, "success");
 	
 	return false;
+}
+
+void TCPCLIENT::ReportCheat(CheatReport m_parameter)
+{
 }
 
 size_t write_data(void* ptr, size_t size, size_t nmemb, void* stream)
