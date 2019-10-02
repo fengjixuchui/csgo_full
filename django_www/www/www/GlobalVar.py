@@ -4,6 +4,15 @@ from enum import Enum, unique
 import pymysql
 import redis
 
+mysql_ip = '127.0.0.1'
+mysql_port = 3306
+mysql_user = 'root'
+mysql_password = 'huoji120'
+mysql_database = 'test'
+redis_ip = '127.0.0.1'
+redis_port = 6379
+redis_password = 'huoji120'
+
 sql_userdata_id = 0
 sql_userdata_username = 1
 sql_userdata_password = 2
