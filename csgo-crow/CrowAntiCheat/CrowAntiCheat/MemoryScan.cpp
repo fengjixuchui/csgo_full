@@ -156,7 +156,7 @@ void MemoryScan::guard_check(void* current_address, MEMORY_BASIC_INFORMATION mem
 }
 void MemoryScan::StartScan()
 {
-	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)StartCheckThread, NULL, NULL, NULL);
+	//CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)StartCheckThread, NULL, NULL, NULL);
 	auto check_isWhileShit = [&](LPCVOID address)
 	{
 		char byData[0x10] = { 0 };
@@ -190,6 +190,7 @@ void MemoryScan::StartScan()
 			memory_information.RegionSize == 294912 ||
 			memory_information.RegionSize == 495616)
 			continue;
+		
 		bool bFoundManualMap = true;
 		for (int z = 0; z < i; z++)
 		{
@@ -200,7 +201,7 @@ void MemoryScan::StartScan()
 				continue;
 			}
 		}
-		if (bFoundManualMap || memory_information.State == MEM_PRIVATE)
+		if (bFoundManualMap || memory_information.Type == MEM_PRIVATE)
 		{
 			T::PrintMessage("Found Unknown Moudle <0x%08X> size: %d \n", current_address, memory_information.RegionSize);
 			ReportStruct m_report;
