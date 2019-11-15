@@ -30,7 +30,8 @@ void Cheat(HMODULE hDLL)
 	//BOOL bRet = WaitNamedPipeA(XorString("\\\\.\\Pipe\\CrowAntiCheat"), NMPWAIT_WAIT_FOREVER);
 	//if (!bRet)
 	//	exit(1);
-	G::hPipe = CreateFileA(
+	G::hPipe = CreateFileA
+	(
 		XorString("\\\\.\\Pipe\\CrowAntiCheat"),
 		GENERIC_READ | GENERIC_WRITE,
 		0,
@@ -40,6 +41,42 @@ void Cheat(HMODULE hDLL)
 		NULL);
 	//Hooks::oldWindowProc = (WNDPROC)SetWindowLongPtr(G::Window, GWL_WNDPROC, (LONG_PTR)Hooks::WndProc);
 	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)AntiCheatThread, NULL, NULL, NULL);
+
+	HANDLE hThreadSnap = INVALID_HANDLE_VALUE;
+	THREADENTRY32 te32;
+	hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+	if (hThreadSnap)
+	{
+		te32.dwSize = sizeof(THREADENTRY32);
+
+		if (!Thread32First(hThreadSnap, &te32))
+		{
+			CloseHandle(hThreadSnap);
+			return;
+		}
+		do
+		{
+			if (te32.th32OwnerProcessID == GetCurrentProcessId() && te32.th32ThreadID != GetCurrentThreadId())
+			{
+				HANDLE hThread = OpenThread(THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, 0, te32.th32ThreadID);
+				if (hThread)
+				{
+					CONTEXT context;
+					context.ContextFlags = CONTEXT_ALL;
+					if (GetThreadContext(hThread, &context))
+					{
+						if (context.Dr0 != 0 || context.Dr1 != 0 || context.Dr2 != 0 || context.Dr3 != 0)
+						{
+							T::PrintMessage("[DEBUGMESSAGE]DECTETION HWID HOOK! \n");
+							break;
+						}
+					}
+					CloseHandle(hThread);
+				}
+			}
+		} while (Thread32Next(hThreadSnap, &te32));
+		CloseHandle(hThreadSnap);
+	}
 
 }
 BOOL APIENTRY DllMain( HMODULE hModule,
