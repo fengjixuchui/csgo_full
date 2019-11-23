@@ -21,7 +21,6 @@ void ProcessInfo(PVOID pParam) {
 			{
 				//接收信息
 				CheatReport* buffer = (CheatReport*)& buf;
-				//底层设计失误不能用.c_str! x86的string库和x64的string库不同!
 				char* antibug = (char*)& buffer->report_other_data;
 				std::string fuckBUGshit(antibug);
 				printf("report_base_address: 0x%08X  report_other_data :%s \n", buffer->report_base_address, buffer->report_other_data);
