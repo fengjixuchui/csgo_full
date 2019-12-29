@@ -9,6 +9,7 @@ enum ReportType
 	Report_UnknownOveryLady,
 	Report_SigedCheat,
 	Report_VMT_Hook,
+	Report_HWBP_Hook,
 	Report_ManualMap,
 	Report_UnknownMoudle,
 	Report_MEMORY_SUSPICIOUS,
